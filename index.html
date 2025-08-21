@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhinav - Python & AI Developer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="#home">Abhinav</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#skills" class="nav-link">Skills</a></li>
+                <li><a href="#projects" class="nav-link">Projects</a></li>
+                <li><a href="#blog" class="nav-link">Blog</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li class="theme-toggle">
+                    <button id="theme-toggle" class="theme-btn">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Hi, I'm <span class="highlight">Abhinav</span>
+                </h1>
+                <p class="hero-subtitle">Building Intelligent Systems with Python & AI</p>
+                <p class="hero-description">
+                    Passionate software developer specializing in Machine Learning, AI, and Data Structures & Algorithms. 
+                    I create innovative solutions that bridge the gap between complex algorithms and real-world applications.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#projects" class="btn btn-primary">View My Work</a>
+                    <a href="#contact" class="btn btn-outline">Get In Touch</a>
+                </div>
+                <div class="hero-social">
+                    <a href="https://github.com/Abhinav6284" target="_blank" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/abhinav" target="_blank" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://twitter.com/abhinav" target="_blank" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="mailto:abhinav@example.com" aria-label="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-elements">
+                    <div class="floating-element python">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <div class="floating-element ai">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="floating-element code">
+                        <i class="fas fa-code"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">About Me</h2>
+                <p class="section-subtitle">Get to know me better</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>
+                        I'm a passionate software developer with a strong foundation in Python programming and a deep fascination 
+                        for artificial intelligence and machine learning. My journey began with data structures and algorithms, 
+                        which provided me with a solid problem-solving foundation.
+                    </p>
+                    <p>
+                        Over the years, I've developed expertise in building intelligent systems that can learn, adapt, and 
+                        provide valuable insights. I enjoy tackling complex challenges and turning innovative ideas into 
+                        practical solutions that make a real-world impact.
+                    </p>
+                    <p>
+                        When I'm not coding, you'll find me exploring the latest research in AI, contributing to open-source 
+                        projects, or sharing my knowledge through technical writing and mentoring.
+                    </p>
+                    <div class="resume-download">
+                        <a href="resume.pdf" download class="btn btn-primary">
+                            <i class="fas fa-download"></i>
+                            Download Resume
+                        </a>
+                    </div>
+                </div>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <h3>50+</h3>
+                        <p>Projects Completed</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>3+</h3>
+                        <p>Years Experience</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>100%</h3>
+                        <p>Client Satisfaction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="skills">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Skills & Technologies</h2>
+                <p class="section-subtitle">Technologies I work with</p>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h3>Programming Languages</h3>
+                    <div class="skills-list">
+                        <div class="skill-item">
+                            <i class="fab fa-python"></i>
+                            <span>Python</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-js-square"></i>
+                            <span>JavaScript</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-java"></i>
+                            <span>Java</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="skill-category">
+                    <h3>Machine Learning & AI</h3>
+                    <div class="skills-list">
+                        <div class="skill-item">
+                            <i class="fas fa-brain"></i>
+                            <span>TensorFlow</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-robot"></i>
+                            <span>Keras</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 88%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Scikit-learn</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="skill-category">
+                    <h3>Data Science</h3>
+                    <div class="skills-list">
+                        <div class="skill-item">
+                            <i class="fas fa-table"></i>
+                            <span>Pandas</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 93%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-calculator"></i>
+                            <span>NumPy</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 91%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Matplotlib</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 87%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="skill-category">
+                    <h3>Web Development</h3>
+                    <div class="skills-list">
+                        <div class="skill-item">
+                            <i class="fas fa-flask"></i>
+                            <span>Flask</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 89%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-react"></i>
+                            <span>React</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 82%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-database"></i>
+                            <span>SQL</span>
+                            <div class="skill-level">
+                                <div class="skill-progress" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="projects">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Projects</h2>
+                <p class="section-subtitle">Some of my recent work</p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="https://github.com/Abhinav6284/ai-chatbot" target="_blank" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="#" target="_blank" class="project-link">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">AI-Powered Chatbot</h3>
+                        <p class="project-description">
+                            Intelligent conversational AI built with TensorFlow and NLP techniques. 
+                            Features context awareness, sentiment analysis, and multi-language support.
+                        </p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">TensorFlow</span>
+                            <span class="tech-tag">NLTK</span>
+                            <span class="tech-tag">Flask</span>
+                        </div>
+                        <button class="project-toggle" onclick="toggleProjectDetails(this)">
+                            <span>View Details</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="project-details">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Natural language understanding with 95% accuracy</li>
+                                <li>Real-time conversation with context memory</li>
+                                <li>Integration with multiple APIs</li>
+                                <li>Scalable architecture supporting 1000+ concurrent users</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="https://github.com/Abhinav6284/stock-predictor" target="_blank" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="#" target="_blank" class="project-link">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Stock Price Predictor</h3>
+                        <p class="project-description">
+                            Machine learning model for stock price prediction using LSTM neural networks. 
+                            Analyzes historical data and market trends for accurate forecasting.
+                        </p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Keras</span>
+                            <span class="tech-tag">Pandas</span>
+                            <span class="tech-tag">Matplotlib</span>
+                        </div>
+                        <button class="project-toggle" onclick="toggleProjectDetails(this)">
+                            <span>View Details</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="project-details">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>LSTM-based deep learning model</li>
+                                <li>Real-time data fetching and processing</li>
+                                <li>Interactive visualization dashboard</li>
+                                <li>85% prediction accuracy on test data</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="https://github.com/Abhinav6284/algorithm-visualizer" target="_blank" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="#" target="_blank" class="project-link">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Algorithm Visualizer</h3>
+                        <p class="project-description">
+                            Interactive web application for visualizing sorting and searching algorithms. 
+                            Educational tool with step-by-step animations and complexity analysis.
+                        </p>
+                        <div class="project-tech">
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">React</span>
+                            <span class="tech-tag">D3.js</span>
+                            <span class="tech-tag">CSS3</span>
+                        </div>
+                        <button class="project-toggle" onclick="toggleProjectDetails(this)">
+                            <span>View Details</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="project-details">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>15+ sorting and searching algorithms</li>
+                                <li>Customizable array size and animation speed</li>
+                                <li>Time and space complexity visualization</li>
+                                <li>Mobile-responsive design</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="projects-cta">
+                <a href="https://github.com/Abhinav6284" target="_blank" class="btn btn-outline">
+                    View All Projects on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="blog">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Latest Articles</h2>
+                <p class="section-subtitle">Thoughts on tech, AI, and development</p>
+            </div>
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <div class="blog-image"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">Aug 15, 2024</span>
+                            <span class="blog-category">Machine Learning</span>
+                        </div>
+                        <h3 class="blog-title">Understanding Neural Networks: A Beginner's Guide</h3>
+                        <p class="blog-excerpt">
+                            Dive deep into the fundamentals of neural networks and learn how they power modern AI applications...
+                        </p>
+                        <a href="#" class="blog-link">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-image"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">Aug 10, 2024</span>
+                            <span class="blog-category">Python</span>
+                        </div>
+                        <h3 class="blog-title">Python Best Practices for Data Science Projects</h3>
+                        <p class="blog-excerpt">
+                            Discover essential Python coding practices that will make your data science projects more maintainable...
+                        </p>
+                        <a href="#" class="blog-link">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-image"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="blog-date">Aug 5, 2024</span>
+                            <span class="blog-category">Algorithms</span>
+                        </div>
+                        <h3 class="blog-title">Dynamic Programming: From Theory to Practice</h3>
+                        <p class="blog-excerpt">
+                            Master dynamic programming with practical examples and learn when and how to apply this powerful technique...
+                        </p>
+                        <a href="#" class="blog-link">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Get In Touch</h2>
+                <p class="section-subtitle">Let's discuss your next project</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Email</h3>
+                            <p>abhinav@example.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Phone</h3>
+                            <p>+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Location</h3>
+                            <p>San Francisco, CA</p>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Your Name" required>
+                        <label for="name">Name</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Your Email" required>
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="subject" name="subject" placeholder="Subject" required>
+                        <label for="subject">Subject</label>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+                        <label for="message">Message</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Send Message</span>
+                        <span class="btn-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p>&copy; 2024 Abhinav. All rights reserved.</p>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-social">
+                        <a href="https://github.com/Abhinav6284" target="_blank" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://linkedin.com/in/abhinav" target="_blank" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://twitter.com/abhinav" target="_blank" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="mailto:abhinav@example.com" aria-label="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
