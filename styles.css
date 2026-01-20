@@ -4,7 +4,7 @@
   --primary-color: #F6851B;
   --primary-hover: #E2761B;
   --secondary-color: #037DD6;
-  --accent-color: #F6851B;
+  --accent-color: #E2761B;
   --accent-purple: #8B5CF6;
   --bg-color: #ffffff;
   --surface-color: #f8fafc;
@@ -22,11 +22,11 @@
 }
 
 /* Dark theme colors - Default (MetaMask Style) */
-[data-theme="dark"], :root {
+[data-theme="dark"] {
   --primary-color: #F6851B;
   --primary-hover: #E2761B;
   --secondary-color: #037DD6;
-  --accent-color: #F6851B;
+  --accent-color: #E2761B;
   --accent-purple: #8B5CF6;
   --bg-color: #24272A;
   --surface-color: #2F3237;
@@ -48,7 +48,7 @@
   --primary-color: #F6851B;
   --primary-hover: #E2761B;
   --secondary-color: #037DD6;
-  --accent-color: #F6851B;
+  --accent-color: #E2761B;
   --accent-purple: #8B5CF6;
   --bg-color: #ffffff;
   --surface-color: #f8fafc;
@@ -298,8 +298,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes gradientShift {
-  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
-  50% { opacity: 0.8; transform: scale(1.05) rotate(5deg); }
+  0%, 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  50% { opacity: 0.8; transform: translate3d(0, 0, 0) scale(1.05); }
 }
 
 .hero-container {
