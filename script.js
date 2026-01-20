@@ -5,13 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollEffects();
     initializeAnimations();
     initializeContactForm();
-    initializeSkillsAnimation();
 });
 
 // Theme Management
 function initializeTheme() {
     const themeToggle = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
+    const currentTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
     
     // Set initial theme
     document.documentElement.setAttribute('data-theme', currentTheme);
@@ -118,52 +117,27 @@ function initializeAnimations() {
     }, observerOptions);
     
     // Observe elements for animation
-    const animateElements = document.querySelectorAll('.project-card, .blog-card, .skill-category, .about-content, .contact-content');
+    const animateElements = document.querySelectorAll('.project-card, .skill-category, .about-content, .contact-content, .stat-item, .capability-item');
     animateElements.forEach(el => observer.observe(el));
 }
 
-// Skills Animation
-function initializeSkillsAnimation() {
-    const skillsSection = document.querySelector('.skills');
-    let hasAnimated = false;
-    
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !hasAnimated) {
-                animateSkillBars();
-                hasAnimated = true;
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    observer.observe(skillsSection);
-}
-
-function animateSkillBars() {
-    const skillBars = document.querySelectorAll('.skill-progress');
-    
-    skillBars.forEach((bar, index) => {
-        setTimeout(() => {
-            const width = bar.style.width;
-            bar.style.width = '0%';
-            setTimeout(() => {
-                bar.style.width = width;
-            }, 100);
-        }, index * 100);
-    });
-}
-
-// Project Details Toggle
-function toggleProjectDetails(button) {
-    const projectCard = button.closest('.project-card');
-    const details = projectCard.querySelector('.project-details');
-    
-    button.classList.toggle('active');
-    details.classList.toggle('active');
-    
-    const span = button.querySelector('span');
-    span.textContent = button.classList.contains('active') ? 'Hide Details' : 'View Details';
-}
-
 // Contact Form
-function initializeContactForm()
+function initializeContactForm() {
+    const contactForm = document.getElementById('contactForm');
+    
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('.btn');
+            btn.classList.add('loading');
+            
+            // Simulate form submission
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                alert('Thank you for your message! I will get back to you soon.');
+                contactForm.reset();
+            }, 2000);
+        });
+    }
+}
