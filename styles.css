@@ -229,7 +229,7 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.3s ease;
 }
 
 [data-theme="dark"] .navbar {
@@ -1578,6 +1578,44 @@ h1, h2, h3, h4, h5, h6 {
 
 .fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Section Reveal Animations */
+section {
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.section-hidden {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.section-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Skill Items and Tech Tags Initial State */
+.skill-item,
+.tech-tag {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.project-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Smooth Page Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 /* Smooth Scrolling for Safari */
