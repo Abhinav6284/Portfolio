@@ -1,0 +1,88 @@
+# Index
+
+Format: `slug` | primary colour | type families | character. Load `designs/<slug>.md` for the full system.
+
+- `1win` | #00b24b | Inter | a near-black crypto casino and sportsbook built on Inter at heavy weights
+- `airbnb` | #ff385c | Airbnb Cereal VF | display sits at 22–28px in weight 500/600 rather than the heavy 700+ that fintech and enterprise systems use
+- `airtable` | #181d26 | Haas Groot Disp, Haas | never bold for its own sake.
+- `aljazeera` | #fa9000 | Roboto | a hard-news editorial system built on flat white paper and dense Roboto headline stacks, signed by one saturated orange used as logo block a
+- `apple` | #0066cc | SF Pro Display, SF Pro Text | no decorative gradients, no shadows on chrome, only the one signature drop-shadow under product imagery resting on a surface.
+- `binance` | #fcd535 | BinanceNova, BinancePlex | the system trusts size and yellow voltage over bold weight. Marketing and product surfaces default to the dark theme
+- `bmw-m` | #ffffff | BMWTypeNextLatin, BMWTypeNextLatin Light | its energy comes from full-bleed automotive photography (cars on tracks, driver-cockpit shots, carbon-fiber detail) and the iconic M tricolo
+- `bmw` | #1c69d4 | BMW Type Next Latin | distinct from BMW M's motorsport-bombastic variant, this is a measured and settled corporate-automotive interface. On a light (cream-tinted 
+- `bugatti` | #ffffff | Bugatti Display, Bugatti Monospace | Bugatti Display, Bugatti Text Regular, and Bugatti Monospace — and combines them at modest weights with wide tracking to feel European-engin
+- `cal` | #111111 | Cal Sans, Inter | generous whitespace, soft-rounded cards (~12px), product UI fragments shown directly inside cards, and a dark navy footer that visually clos
+- `claude` | #cc785c | Copernicus, StyreneB | deliberately warm and humanist where most AI brands use cool blue + slate. Type voice runs a slab-serif display ("Copernicus" / Tiempos Head
+- `clay` | #0a0a0a | Plain Black, Inter | hot pink, deep teal, lavender, peach, ochre — that punctuate long-scroll explainer pages. Brand voltage comes from 3D-rendered claymation il
+- `clickhouse` | #faff69 | Inter, JetBrains Mono | brand identity without atmospheric decoration.
+- `cohere` | #17171c | CohereText, Unica77 Cohere Web | Cohere's 2026 web system is a controlled enterprise AI interface built from stark white editorial space, deep green-black product bands, sof
+- `coinbase` | #0052ff | Coinbase Display, Coinbase Sans | display sits at weight 400 not 700, signaling editorial calm rather than fintech-bombastic. Page rhythm rotates between bright white section
+- `composio` | #0007cd | abcDiatype, JetBrains Mono | used as the homepage hero anchor.
+- `cursor` | #f54e00 | CursorGothic, JetBrains Mono | display sits at weight 400 with negative letter-spacing for a magazine feel rather than a bold tech voice. The single brand voltage is **Cur
+- `dell-1996` | #e91d2a | Arial Black, Helvetica | a catalog-era enterprise web design built around a literal black page frame, vivid flat color-block "ribbon cards" tinted in sage, salmon, p
+- `dji` | #0070d5 | Open Sans | a product-photography showroom for drones and cameras
+- `elevenlabs` | #292524 | Waldenburg, Inter | soft pastel atmospheric gradient orbs (mint → peach → lavender → sky) drift through the page as the only "color" moments. Display runs Walde
+- `expo` | #000000 | Inter, JetBrains Mono | minimal and editorial-feeling, paired with a small blue text-link accent (`#0d74ce`) reserved for inline body links. Type pairs Inter at mod
+- `ferrari` | #da291c | FerrariSans | the iconic Ferrari racing red — used scarcely on primary CTAs, the Cavallino mark, and Formula 1 race-position highlights. Type runs **Ferra
+- `figma` | #000000 | figmaSans, figmaMono | figmaSans variable type, pure white surfaces, pure black ink, pill-shaped CTAs — while each story section drops the page into a saturated li
+- `framer` | #ffffff | GT Walsheim Framer Medium, GT Walsheim Medium | pure black surfaces, white display type set in GT Walsheim Medium with aggressive negative tracking, and a single confident blue (#0099ff) r
+- `hashicorp` | #000000 | hashicorpSans | Terraform purple, Vault yellow, Consul pink, Waypoint cyan, Vagrant blue — that act as identity tokens rather than decorative palette. Displ
+- `hp` | #024ad8 | Forma DJR Micro | a white-paper enterprise-consumer system anchored by HP Electric Blue (`#024ad8`) as the lone signal CTA, near-black ink (`#1a1a1a`) for hea
+- `ibm` | #0f62fe | IBM Plex Sans | the result reads as old-world enterprise gravitas reframed for the cloud era."
+- `intercom` | #111111 | Saans, SaansMono | "An editorial customer-service marketing canvas built around a soft cream-white ground, charcoal type set in Saans (Intercom's proprietary g
+- `jobright` | #00f0a0 | Titillium Web, Inter | an AI job-hunting platform built on an energetic spring-mint green against black and white, with pale-mint section bands carrying the page r
+- `kraken` | - | - | 
+- `lamborghini` | - | - | 
+- `linear.app` | #5e6ad2 | Linear Display, Linear Text | never decoratively. Page rhythm leans on product UI screenshots framed in dark panels rather than atmospheric color."
+- `lovable` | - | - | 
+- `mastercard` | - | - | 
+- `mercury` | #5266eb | arcadiaDisplay, arcadia | a fintech system that moves between a deep ink-violet night world on the homepage and a pale, near-white light world on its product and pric
+- `meta` | #0064e0 | Optimistic VF | Meta's design system spans hardware commerce (Quest VR, Ray-Ban Meta AI glasses) and brand surfaces with a confident product-merchandising v
+- `minimax` | #0a0a0a | DM Sans | bold black-pill CTAs and stark white canvas for marketing, paired with vibrant gradient product cards (orange-red, magenta-pink, purple, blu
+- `mintlify` | #0a0a0a | Inter, Geist Mono | atmospheric sky-gradient marketing heroes (cloud illustration backdrops, soft cream-to-blue washes) paired with dense developer-grade docume
+- `miro` | #1c1c1e | Roobert PRO | anchored by its signature canary yellow ({colors.brand-yellow}) wordmark over white canvas, broken open by colorful pastel feature tints (ro
+- `mistral.ai` | #fa520f | PP Editorial Old, Inter | atmospheric sunset gradients (mustard, orange, deep red) layered over photography of mountains, plus a horizontal "sunset stripe" bar that c
+- `mongodb` | #00ed64 | Euclid Circular A, Source Code Pro | dark deep-teal hero bands with bright MongoDB green ({colors.brand-green}) CTAs paired with stark white documentation surfaces. The signatur
+- `mydealz` | #30a83c | Averta CY, monospace | a high-density German deals-community system built on a confident brand green
+- `nerdwallet` | #008254 | Gotham, GothamDisplay | a personal-finance comparison platform built almost entirely from one deep green and a ladder of mints beneath it. Editorial pages open on a
+- `nike` | #111111 | Nike Futura ND, Helvetica Now Display Medium | |
+- `nintendo-2001` | #e60012 | Arial, Arial Black | a brushed-periwinkle "console chrome" interface where every panel is a beveled metal plate, navigation glows amber over a halftone-dotted ca
+- `notion` | #5645d4 | Notion Sans | anchored by a deep navy hero band ({colors.brand-navy}) decorated with brand-colored sticky-note dots and mesh wire illustrations, a signatu
+- `nvidia` | #76b900 | NVIDIA-EMEA | |
+- `ollama` | #000000 | SF Pro Rounded, ui-sans-serif | |
+- `opencode.ai` | #201d1d | Berkeley Mono | |
+- `oracle` | #312d2a | Georgia, Oracle Sans | an enterprise system built on a warm neutral ladder rather than a colour palette. Six numbered greys carry almost every surface, a single da
+- `oura` | #2a72de | Editorial New, AkkuratLL | a warm-paper wellness system that pairs a high-contrast Editorial serif with a quiet grotesque sans, wraps every surface in a cream-and-eart
+- `pinterest` | #e60023 | Pin Sans | |
+- `playstation` | #0070d1 | PlayStation SST | |
+- `posthog` | #f7a501 | IBM Plex Sans Variable, ui-monospace | |
+- `raycast` | #ffffff | Inter | |
+- `renault` | #ffed00 | NouvelR | |
+- `replicate` | #ea2804 | rb-freigeist-neue, basier-square | |
+- `resend` | #fcfdff | Domaine Display, ABC Favorit | |
+- `revolut` | #494fdf | Aeonik Pro, Inter | |
+- `runwayml` | - | - | 
+- `sanity` | - | - | 
+- `sap` | #0057d2 | 72 Brand Variable | an enterprise system that keeps almost everything on white and spends its structure on two greys and one blue. The chrome is deliberately qu
+- `sentry` | #150f23 | Sentri Display, Rubik | a developer-tools brand built on a deep purple-violet midnight canvas, electric lime accents, and a slightly subversive illustrated personal
+- `shopify` | #000000 | NeueHaasGrotesk Display, Inter Variable | a cinematic commerce platform that runs two parallel design tracks. The marketing-hero and product-narrative pages live on near-black canvas
+- `slack` | #4a154b | Salesforce-Avant-Garde, Salesforce-Sans | a workplace messaging brand built on a deep aubergine primary, with cream-lavender hero gradients, blue inline links, and pill CTAs. The sys
+- `spacex` | #000000 | D-DIN-Bold, D-DIN | a mission-oriented aerospace brand built on pure black canvas, full-bleed photographic and video heroes of rockets and Mars landscapes, and 
+- `spotify` | - | - | 
+- `starbucks` | - | - | 
+- `stripe` | #533afd | sohne-var | a financial-infrastructure brand built on a deep navy ink, an electric indigo primary, and a recurring atmospheric gradient mesh that occupi
+- `supabase` | #3ecf8e | Circular, ui-monospace | an open-source database platform built on a clean white-and-near-black system with a single signature emerald-green CTA, a custom humanist s
+- `superhuman` | #1b1938 | Super Sans VF | a fast-email productivity brand split between an editorial dark hero (deep indigo navy with violet-sky atmospheric backdrop and a portrait s
+- `tesla` | - | - | 
+- `theverge` | - | - | 
+- `together.ai` | #000000 | The Future, PP Neue Montreal Mono | an AI infrastructure platform whose surface alternates between near-black hero bands (with a three-color orange-magenta-periwinkle gradient 
+- `uber` | #000000 | UberMove, UberMoveText | a transportation-and-delivery super-app brand whose web surface is a black-and-white duet, framed by a custom geometric display sans, accent
+- `vercel` | #171717 | Geist, Geist Mono | a developer-platform brand whose surface is a stark black-and-ink duet on near-white canvas, broken at hero scale by a multi-color mesh grad
+- `vodafone` | #e60000 | Vodafone | a telecom super-brand whose web surface alternates between editorial photography hero bands with massive uppercase display headlines and cle
+- `voltagent` | #00d992 | Inter, SFMono-Regular | a developer-focused AI agent engineering platform whose surface is an unrelenting near-black canvas broken only by a single electric-green b
+- `warp` | #f7f5f0 | Inter, Instrument Serif | an agentic terminal-and-development-environment brand whose surface is a warm near-charcoal canvas (a tint warmer than pure black), broken o
+- `webflow` | #080808 | WF Visual Sans Variable, WFVisualSans-Mono | a visual web development platform whose surface contrasts a deep near-black `#080808` primary against a generous white canvas, broken by a f
+- `wired` | #000000 | WiredDisplay, Apercu | a flagship technology-magazine brand whose surface is a strict editorial duet of stark black wordmark on white canvas, anchored by a tall na
+- `wise` | #9fe870 | Wise Sans, Inter | a global money-transfer brand whose surface combines an unusually heavy near-black display sans (weight 900 at 64–126 px) with a vivid lime-
+- `x.ai` | #ffffff | universalSans, GeistMono | Elon Musk's frontier-AI company whose web surface is a strict near-black canvas broken only by white pill outlines, occasional warm sunset /
+- `zapier` | #ff4f00 | Degular Display, Inter | a workflow-automation platform whose surface combines warm-cream neutrals (`#fffefb` canvas, `#f8f4f0` soft cream) with deep coffee ink (`#2
