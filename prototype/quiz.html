@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abhinav Goyal · Sixty-second backend</title>
+<meta name="description" content="Abhinav Goyal, Python and GenAI backend engineer in Ludhiana. Play each system he has shipped: wire the request from payment to database to WhatsApp and beat his par.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0b0e14;
+  --board:#121826;
+  --tile:#1d2535;
+  --tile-hover:#27324a;
+  --visited:#25406b;
+  --ink:#eef0f4;
+  --soft:#a6aebb;
+  --paper:#e7e8e5;
+  --paper-ink:#14171d;
+  --paper-soft:#4c525c;
+  --blue:#4d9fff;
+  --gold:#f0c060;
+  --wrong:#ff8a7a;
+
+  --display:"Cormorant Garamond", Georgia, serif;
+  --text:"Outfit", system-ui, sans-serif;
+
+  --s-display:clamp(64px, 9vw, 150px);
+  --s-head:clamp(40px, 4.4vw, 68px);
+  --s-title:clamp(24px, 2vw, 30px);
+  --s-body:18px;
+  --s-small:14px;
+
+  --margin:32px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (max-width:900px){ :root{ --margin:16px; --s-body:16px; } }
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font:400 var(--s-body)/1.55 var(--text);font-variant-numeric:tabular-nums}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.skip{position:absolute;left:var(--margin);top:12px;background:var(--paper);color:var(--paper-ink);padding:12px 16px;z-index:50;font-weight:600}
+.skip:not(:focus){width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1}
+h2{font-size:var(--s-head)}
+h3{font-size:var(--s-title)}
+.soft{color:var(--soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 24px;background:var(--blue);color:#06101f;font-weight:600;text-decoration:none;border:0;cursor:pointer;transition:transform .18s var(--ease),background-color .18s}
+.btn:hover{background:#79b7ff}
+.btn:active{transform:scale(.97)}
+.btn.quiet{background:var(--tile);color:var(--ink)}
+.btn.quiet:hover{background:var(--tile-hover)}
+.link{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;transition:color .18s}
+.link:hover{color:var(--blue)}
+
+/* ---------- the split ---------- */
+.split{display:grid;grid-template-columns:50% 50%;position:relative}
+.stage{position:sticky;top:0;height:100svh;padding:20px 0 20px 20px}
+.col{padding:0 var(--margin) 0 56px;min-width:0}
+
+/* ---------- the quiz ---------- */
+.board{position:relative;height:100%;background:var(--board);display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 28px}
+.hud h2{font-size:var(--s-title)}
+.stats{display:flex;gap:24px;font-size:var(--s-small);color:var(--soft);white-space:nowrap}
+.stats b{display:block;color:var(--ink);font-size:var(--s-body);font-weight:600}
+.timer{height:8px;margin:0 28px;background:var(--tile)}
+.timer i{display:block;height:100%;background:var(--blue);transform-origin:left;transform:scaleX(1)}
+.timer.low i{background:var(--wrong)}
+.card{display:flex;flex-direction:column;justify-content:center;gap:32px;padding:32px 28px 40px}
+.card[hidden]{display:none}
+.line{position:relative;display:flex;justify-content:space-between;align-items:center;max-width:560px}
+.line::before{content:"";position:absolute;left:8px;right:8px;top:50%;height:4px;background:var(--tile);transform:translateY(-50%)}
+.hop{position:relative;z-index:1;padding:6px 12px;background:var(--tile);font-size:var(--s-small);font-weight:600;transition:background-color .2s,color .2s}
+.hop.ok{background:var(--gold);color:var(--paper-ink)}
+.hop.fail{background:var(--wrong);color:var(--paper-ink)}
+.packet{position:absolute;z-index:2;left:0;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--gold);opacity:0}
+.q{font:600 clamp(32px,3.2vw,50px)/1.08 var(--display);letter-spacing:-.02em;max-width:18ch;min-height:2.2em}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:640px}
+.choice{min-height:88px;padding:16px 20px;background:var(--tile);border:0;cursor:pointer;text-align:left;font-size:var(--s-body);font-weight:600;display:flex;gap:12px;align-items:center;transition:background-color .15s,transform .15s var(--ease)}
+.choice kbd{font:inherit;font-size:var(--s-small);color:var(--soft);background:var(--ground);padding:2px 8px}
+.choice:hover{background:var(--tile-hover)}
+.choice:active{transform:scale(.97)}
+.choice.right{background:var(--gold);color:var(--paper-ink)}
+.choice.wrong{background:var(--wrong);color:var(--paper-ink)}
+.choice.right kbd,.choice.wrong kbd{color:var(--paper-ink);background:transparent}
+.choice:disabled{cursor:default}
+.answer{min-height:5.2em;max-width:56ch}
+.answer b{display:block;font:600 var(--s-title)/1.15 var(--display);margin-bottom:6px}
+.answer span{color:var(--soft)}
+.flip{animation:flip .35s var(--ease) both}
+@keyframes flip{from{opacity:0;transform:translateX(32px)}}
+.pop{animation:pop .3s var(--ease) both}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}}
+.intro h3,.end h3{font:600 var(--s-head)/1 var(--display);letter-spacing:-.02em;max-width:14ch}
+.intro p,.end p{max-width:44ch}
+.end .big{font:600 var(--s-display)/1 var(--display)}
+.end ul{list-style:none;display:grid;gap:6px}
+.end li{color:var(--soft)}
+.end li b{color:var(--ink);font-weight:600}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.nojs{color:var(--soft)}
+.js .nojs{display:none}
+
+/* ---------- hero ---------- */
+.nav{display:flex;justify-content:flex-end;gap:24px;align-items:center;padding-top:22px;flex-wrap:wrap}
+.nav a:not(.btn){text-decoration:none}
+.nav a:not(.btn):hover{color:var(--blue)}
+.nav .btn{min-height:44px;padding:0 18px}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:96px 0 30vh}
+.split > .nav{position:absolute;top:0;left:50%;right:var(--margin);z-index:4}
+.hero p.lead{font-family:var(--display);font-size:var(--s-title);line-height:1.2;font-weight:500;max-width:26ch}
+.hero ul{list-style:none;color:var(--soft);display:grid;gap:4px}
+.hero .row{display:flex;gap:12px;flex-wrap:wrap}
+.name{position:absolute;left:38vw;right:var(--margin);top:calc(100svh - 40px);overflow:hidden;transform:translateY(-100%);z-index:3;pointer-events:none;
+  font:500 var(--s-display)/.85 var(--display);letter-spacing:-.04em;white-space:nowrap;text-align:right;transform-origin:right bottom}
+
+/* ---------- levels ---------- */
+.levels{padding-top:40px}
+.levels > h2{margin-bottom:24px}
+.levels > p{max-width:46ch;margin-bottom:24px}
+.level{min-height:100svh;padding:72px 0;display:grid;gap:20px;align-content:center}
+.level figure img{aspect-ratio:16/10;object-fit:cover;width:100%;filter:grayscale(1) contrast(1.05)}
+.level figcaption{font-size:var(--s-small);color:var(--soft);margin-top:8px}
+.level h3{font-size:var(--s-head)}
+.level .tag{color:var(--soft)}
+.level p{max-width:46ch}
+.level dl{display:grid;grid-template-columns:auto 1fr;gap:8px 20px;max-width:52ch}
+.level dt{color:var(--soft)}
+.level ol{padding-left:22px;color:var(--soft);display:grid;gap:2px}
+.js .level ol.path{display:none}
+.chatart{aspect-ratio:16/10;background:#dfe3df;padding:24px;display:flex;flex-direction:column;gap:10px;justify-content:center;color:#141821;font-size:15px}
+.chatart div{max-width:76%;padding:10px 13px;background:#fff}
+.chatart .out{align-self:flex-end;background:#d8f6c6}
+
+/* ---------- skill sheet ---------- */
+.skills{padding:120px 0}
+.sheet{background:var(--paper);color:var(--paper-ink);padding:64px 56px}
+.sheet h2{text-align:center}
+.sheet > p{text-align:center;color:var(--paper-soft);margin:12px auto 0;max-width:40ch}
+.group{margin-top:64px}
+.group h3{text-align:center;margin-bottom:16px}
+.group ul{list-style:none;display:grid;gap:10px}
+.group li{display:flex;justify-content:space-between;gap:16px;align-items:baseline;transition:background-color .4s}
+.group li span:last-child{color:var(--paper-soft);white-space:nowrap}
+.group li.lit{background:var(--gold)}
+.group li.lit span:last-child{color:var(--paper-ink)}
+
+/* ---------- experience ---------- */
+.exp{padding:40px 0 160px}
+.exp h2{margin-bottom:32px}
+.job{display:grid;grid-template-columns:1fr auto;gap:4px 24px;padding:20px 24px}
+.job + .job{margin-top:8px}
+.job h3{font-size:var(--s-title)}
+.job .when{color:var(--soft);text-align:right}
+.job p{grid-column:1 / -1;max-width:52ch}
+.job:nth-child(even){background:var(--board)}
+
+/* ---------- contact: full width, inverse ---------- */
+.contact{background:var(--paper);color:var(--paper-ink);padding:96px var(--margin) 40px;display:grid;gap:56px}
+.contact p.ask{font-size:var(--s-title);font-family:var(--display);line-height:1.2;max-width:30ch}
+.contact h2{align-self:end;font:500 var(--s-display)/.9 var(--display);letter-spacing:-.04em}
+.contact h2 a{text-decoration:none;transition:color .2s}
+.contact h2 a:hover{color:#1a56b0}
+.contact .corners{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:var(--s-small)}
+.contact .corners a{margin-left:16px}
+
+/* ---------- footer ---------- */
+footer{display:grid;grid-template-columns:1fr 1fr;min-height:100svh}
+footer > img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.75)}
+.menu{padding:80px var(--margin) 32px 56px;display:grid;grid-template-rows:auto 1fr auto;gap:40px}
+.menu .mark{font:600 var(--s-title)/1 var(--display)}
+.menu ul{list-style:none;display:grid;gap:20px;align-content:start}
+.menu ul a{font:600 var(--s-head)/1 var(--display);text-decoration:none;display:inline-block;transition:transform .2s var(--ease),color .2s}
+.menu ul a:hover{transform:translateX(12px);color:var(--blue)}
+.credits{font-size:var(--s-small);color:var(--soft);max-width:60ch}
+
+/* ---------- phone ---------- */
+@media (max-width:900px){
+  .split{display:flex;flex-direction:column}
+  .stage{position:relative;height:auto;padding:0;order:2}
+  .board{height:auto}
+  .choices{grid-template-columns:1fr}
+  .choice{min-height:64px}
+  .hud{flex-direction:column;align-items:flex-start;padding:20px 16px}
+  .timer{margin:0 16px}
+  .card{padding:24px 16px 32px;gap:24px}
+  .col{display:contents}
+  .col > *{padding-inline:var(--margin)}
+  .hero{order:1;min-height:0;padding:20px var(--margin) 56px}
+  .split > .nav{position:static;order:0;justify-content:flex-end;padding:16px var(--margin) 0}
+  .nav a:not(.btn):not(:last-of-type){display:none}
+  .name{order:0;padding-inline:var(--margin) !important;position:static;transform:none;font-size:clamp(52px,15vw,96px);white-space:normal;text-align:left;order:0;padding:28px 0 0;line-height:.9}
+  .levels{order:3}.skills{order:4}.exp{order:5}
+  .level{min-height:0;padding:56px 0}
+  .sheet{padding:48px 20px}
+  .contact h2{font-size:11.5vw}
+  footer{grid-template-columns:1fr}
+  footer > img{height:50svh}
+  .menu{padding:48px var(--margin) 32px}
+}
+@media (max-width:900px){ .hero-wrap{order:1} }
+
+/* ---------- entrances ---------- */
+.js .rise{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--i,0) * 80ms)}
+.js .rise.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .js .rise{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<script>document.documentElement.classList.add('js')</script>
+
+<main id="main">
+<div class="split">
+  <nav class="nav" aria-label="Main">
+    <a href="#levels">Work</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#resume">Résumé</a>
+    <a class="btn" href="#contact">Hire me</a>
+  </nav>
+  <h1 class="name" id="name">abhinav goyal</h1>
+
+  <!-- the quiz: one fixed half that never leaves -->
+  <div class="stage" id="play">
+    <section class="board" aria-labelledby="quiz-h">
+      <div>
+        <div class="hud">
+          <h2 id="quiz-h">Sixty-second backend</h2>
+          <div class="stats">
+            <div>Card<b id="st-card">0 / 10</b></div>
+            <div>Streak<b id="st-streak">0</b></div>
+            <div>Score<b id="st-score">0</b></div>
+          </div>
+        </div>
+        <div class="timer" id="timer" aria-hidden="true"><i id="bar"></i></div>
+      </div>
+
+      <div class="card intro" id="intro">
+        <h3>Ten calls. Five seconds each.</h3>
+        <p>Each card is a decision from a system I run in production. Tap the right call; the request fires and the answer lands. Keys A and B work too.</p>
+        <div class="row"><button class="btn" type="button" id="go">Start</button></div>
+        <p class="nojs">Turn on JavaScript to play.</p>
+      </div>
+
+      <div class="card" id="card" hidden>
+        <div class="line" id="line" aria-hidden="true"><span class="hop"></span><span class="hop"></span><span class="hop"></span><i class="packet" id="packet"></i></div>
+        <p class="q" id="q" aria-live="polite"></p>
+        <div class="choices">
+          <button class="choice" type="button" data-i="0"><kbd>A</kbd><span></span></button>
+          <button class="choice" type="button" data-i="1"><kbd>B</kbd><span></span></button>
+        </div>
+        <div class="answer" id="answer" aria-live="polite"></div>
+      </div>
+
+      <div class="card end" id="end" hidden>
+        <p class="big" id="end-score"></p>
+        <h3 id="end-title"></h3>
+        <ul id="end-stats"></ul>
+        <div class="row"><button class="btn" type="button" id="again">Play again</button><a class="btn quiet" href="#skills">See the skills you lit</a></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <div class="hero" id="top">
+      <p class="lead rise">Backend and GenAI engineer in Ludhiana. Think you can make my calls? Ten cards, five seconds each.</p>
+      <ul class="rise" style="--i:1">
+        <li>Software Developer at Cybrik Solutions</li>
+        <li>Founder of Planorah</li>
+        <li>Flexo runs renewals for 20+ gyms</li>
+      </ul>
+      <div class="row rise" style="--i:2">
+        <a class="btn" href="#play" id="start">Play: 60 seconds</a>
+      </div>
+    </div>
+
+    <section class="levels" id="levels" aria-labelledby="levels-h">
+      <h2 id="levels-h">Where the cards come from</h2>
+      <p>Every card on the left is a call I make in one of these four systems.</p>
+
+      <article class="level" data-level="flexo" aria-labelledby="l-flexo">
+        <h3 id="l-flexo" class="rise">Flexo</h3>
+        <p class="tag rise">Multi-tenant gym SaaS · 20+ paying gyms across India</p>
+        <figure class="rise"><img src="assets/dumbells-and-free-weights-in-a-gym.jpg" width="1920" height="1395" alt="Racks of dumbbells and free weights on a gym floor" loading="lazy" decoding="async"><figcaption>A gym floor. Flexo runs the front desk behind it.</figcaption></figure>
+        <p class="rise">Members, plans, attendance and renewals for gyms across India. Every query is scoped to its gym, renewals are reminded on WhatsApp and paid through Razorpay, and each payment binds to the member's record. I own it end to end: schema, build, deploy and production support.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Next.js, Supabase Postgres, Prisma, Razorpay, Meta WhatsApp Business API</dd></dl>
+      </article>
+
+      <article class="level" data-level="planorah" aria-labelledby="l-planorah">
+        <h3 id="l-planorah" class="rise">Planorah</h3>
+        <p class="tag rise">My company · AI learning roadmaps · ₹0, ₹99, ₹249, ₹499</p>
+        <figure class="rise"><img src="assets/old-library-history-reading-room-1964-3925726829.jpg" width="1920" height="1439" alt="Students reading at long tables in a library reading room, 1964" loading="lazy" decoding="async"><figcaption>A reading room, 1964. Planorah plans what happens in one.</figcaption></figure>
+        <p class="rise">A learner states a goal and the hours they have; Planorah returns a week-by-week roadmap. A Django monolith owns the product, Gemini 2.5 Flash drafts the plan in a FastAPI service, and a behavioural engine reshapes it around how that learner actually studies. Celery keeps the slow work out of the request.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Django, Postgres, Celery, FastAPI, Gemini 2.5 Flash, Razorpay, Nginx and Gunicorn</dd></dl>
+      </article>
+
+      <article class="level" data-level="crm" aria-labelledby="l-crm">
+        <h3 id="l-crm" class="rise">Voice CRM</h3>
+        <p class="tag rise">White-label B2B · AI calls and WhatsApp</p>
+        <figure class="rise"><img src="assets/army-switchboard-operators.jpg" width="1920" height="1234" alt="Two telephone operators taking calls in front of a long switchboard, 1940s" loading="lazy" decoding="async"><figcaption>Switchboard operators, 1940s: the job the dialler now does.</figcaption></figure>
+        <p class="rise">A new lead gets a phone call, not a spreadsheet row. Tata Smartflo places the call, an ElevenLabs voice holds the conversation, the transcript is summarised back onto the lead, and a WhatsApp follow-up goes out. Nobody dials.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Python, Tata Smartflo, ElevenLabs, Meta WhatsApp Business API, Postgres</dd></dl>
+      </article>
+
+      <article class="level" data-level="cybrik" aria-labelledby="l-cybrik">
+        <h3 id="l-cybrik" class="rise">Cybrik</h3>
+        <p class="tag rise">Day job · AI voice agents on WhatsApp</p>
+        <figure class="rise">
+          <div class="chatart" role="img" aria-label="A WhatsApp conversation in which an agent books a biometrics appointment">
+            <div>My student visa file went in last week. What's next?</div>
+            <div class="out">Biometrics. I can book Tuesday 11:00 or Thursday 15:30.</div>
+            <div>Thursday please</div>
+            <div class="out">Booked. The document checklist is on its way as a voice note.</div>
+          </div>
+          <figcaption>An agent conversation. Sample client.</figcaption>
+        </figure>
+        <p class="rise">At Cybrik Solutions I build agents that answer on WhatsApp for an immigration-services client: documents, visa stages and appointments, handled in conversation and passed to a person when it matters. Django and Flask services, LLMs through AWS Bedrock.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Django, Flask, AWS Bedrock, WhatsApp, Postgres</dd></dl>
+      </article>
+    </section>
+
+    <section class="skills" id="skills" aria-labelledby="skills-h">
+      <div class="sheet scallop rise">
+        <h2 id="skills-h">Skill sheet</h2>
+        <p>What I ship with today and what I'm learning next. Answer a card right and its skill lights up.</p>
+        <div class="group"><h3>Backend</h3><ul>
+          <li><span>Python, Django, Flask, FastAPI</span><span>Shipped</span></li>
+          <li data-skill="webhooks"><span>Webhooks &amp; payments</span><span>Shipped</span></li>
+          <li data-skill="tenancy"><span>Multi-tenant schema design</span><span>Shipped</span></li>
+          <li data-skill="queues"><span>Celery task queues</span><span>Shipped</span></li>
+          <li><span>REST API design, auth</span><span>Shipped</span></li>
+        </ul></div>
+        <div class="group"><h3>GenAI</h3><ul>
+          <li data-skill="llm"><span>LLM integration, Gemini, prompts</span><span>Shipped</span></li>
+          <li data-skill="bedrock"><span>AWS Bedrock</span><span>Shipped</span></li>
+          <li data-skill="structured"><span>Structured output and validation</span><span>Shipped</span></li>
+          <li data-skill="rag"><span>RAG, embeddings, vector search</span><span>Learning</span></li>
+          <li><span>Vertex AI, agentic systems</span><span>Learning</span></li>
+        </ul></div>
+        <div class="group"><h3>Calls and messages</h3><ul>
+          <li data-skill="whatsapp"><span>Meta WhatsApp Business API</span><span>Shipped</span></li>
+          <li data-skill="telephony"><span>Tata Smartflo telephony</span><span>Shipped</span></li>
+          <li data-skill="voice"><span>ElevenLabs voice</span><span>Shipped</span></li>
+        </ul></div>
+        <div class="group"><h3>Cloud and data</h3><ul>
+          <li><span>Postgres, Supabase, Prisma, SQLAlchemy</span><span>Shipped</span></li>
+          <li><span>AWS EC2, RDS; GCP Cloud Run, Cloud SQL</span><span>Shipped</span></li>
+          <li><span>Linux, Nginx, Gunicorn, CI/CD</span><span>Shipped</span></li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section class="exp" id="experience" aria-labelledby="exp-h">
+      <h2 id="exp-h">Where I've worked</h2>
+      <article class="job rise"><h3>Cybrik Solutions</h3><span class="when">Nov 2025 to now</span><p>Software Developer. GenAI backend services in Django and Flask on AWS Bedrock; REST APIs owned from design to production; slow endpoints profiled and SQL rewritten.</p></article>
+      <article class="job rise"><h3>Planorah</h3><span class="when">Jul 2025 to now</span><p>Founder and sole engineer. Backend, APIs, auth, progress tracking, frontend, and the Linux box it runs on.</p></article>
+      <article class="job rise"><h3>NexBuild Labs</h3><span class="when">Ongoing</span><p>My web and SEO agency for local businesses.</p></article>
+      <article class="job rise"><h3>Corediva Inc.</h3><span class="when">Jul to Sep 2025</span><p>Python Developer Intern. Flask backends, and email-marketing and billing modules that replaced a manual workflow.</p></article>
+      <article class="job rise"><h3>Study</h3><span class="when">MCA expected 2027</span><p>MCA at Amity University; BCA, Panjab University, 2025; Certificate in AI &amp; Machine Learning, IIT Hyderabad, 2026.</p></article>
+    </section>
+  </div>
+</div>
+
+<section class="contact" id="contact" aria-labelledby="contact-h">
+  <p class="ask">Have a system that takes money, places calls or sends messages? Write to me.</p>
+  <h2 id="contact-h"><a href="mailto:abhinavgoyal9729@gmail.com?subject=A%20backend%20to%20build">abhinavgoyal9729@<br>gmail.com</a></h2>
+  <div class="corners">
+    <span>Ludhiana, Punjab · IST, UTC+5:30</span>
+    <span><a class="link" href="https://github.com/Abhinav6284">GitHub</a><a class="link" href="https://linkedin.com/in/abhinav-goyal">LinkedIn</a><a class="link" href="#resume" id="resume">Résumé (PDF)</a></span>
+  </div>
+</section>
+</main>
+
+<footer>
+  <img src="assets/clock-tower-ludhiana.jpg" width="1920" height="2560" alt="Ludhiana's clock tower above a busy street" loading="lazy" decoding="async">
+  <div class="menu">
+    <p class="mark">abhinav goyal</p>
+    <ul>
+      <li><a href="#play">Play</a></li>
+      <li><a href="#levels">Work</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p class="credits">© 2026 Abhinav Goyal. Photographs, shown in greyscale: “Dumbells and free weights in a gym”, Wikimedia Commons, CC BY-SA 4.0; “Old Library, History Reading Room, 1964”, no known copyright restrictions; “Army Switchboard Operators”, US Army Signal Corps, public domain; “Clock tower Ludhiana” by Deepu.dhaipai, CC BY-SA 4.0.</p>
+  </div>
+</footer>
+
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+/* every card is a decision from a real system: [question, right, wrong, why, where, hops, skill] */
+const CARDS = [
+  ['A payment webhook arrives twice.', 'Skip the repeat', 'Renew twice', 'Webhooks are delivered at least once. Store the event ID and apply it once.', 'Flexo · Razorpay', ['Razorpay', 'API', 'Postgres'], 'webhooks'],
+  ['The browser says “payment done”. Renew the member?', 'Wait for the webhook', 'Renew now', "Anyone can fake a browser message. Only Razorpay's signed webhook counts.", 'Flexo · Razorpay', ['Browser', 'API', 'Postgres'], 'webhooks'],
+  ["Gym A's owner opens the member list.", 'Only gym A', 'All members', 'Every query is scoped to its gym. One leak and every gym stops trusting you.', 'Flexo · multi-tenancy', ['Owner', 'API', 'Postgres'], 'tenancy'],
+  ['Gemini takes 6 seconds to draft a roadmap. Where does it run?', 'On a Celery queue', 'Inside the request', 'Waiting inside the request ties up a web worker per learner. Queue it, return fast.', 'Planorah · Celery', ['Learner', 'Django', 'Celery'], 'queues'],
+  ['Gemini returns broken JSON.', 'Validate and retry', 'Save it anyway', "Check every response against the schema before it touches the learner's plan.", 'Planorah · Gemini 2.5 Flash', ['FastAPI', 'Gemini', 'Schema'], 'structured'],
+  ['A new lead fills in the form.', 'Call within seconds', 'Add to a sheet', 'A spreadsheet row is where leads go cold. Smartflo dials the moment it lands.', 'Voice CRM · Tata Smartflo', ['Form', 'CRM', 'Smartflo'], 'telephony'],
+  ['Message a customer who went quiet 3 days ago on WhatsApp.', 'Approved template', 'Free text', 'Outside the 24-hour window, Meta only lets businesses open with an approved template.', 'Flexo · WhatsApp Business API', ['API', 'Meta', 'WhatsApp'], 'whatsapp'],
+  ['An endpoint takes 2 seconds. First move?', 'Profile the query', 'Add servers', 'Measure first. Usually it is one slow SQL query, not a lack of servers.', 'Cybrik · Django', ['Client', 'API', 'Postgres'], null],
+  ['Where does the AWS Bedrock key live?', 'Server, via IAM', 'Frontend code', 'Anything shipped to the browser is public. Keys stay on the server.', 'Cybrik · AWS Bedrock', ['Browser', 'Server', 'Bedrock'], 'bedrock'],
+  ['A visa client asks a routine question at 11 pm.', 'Agent answers now', 'Wait for 9 am', 'Routine questions get answered in conversation; people step in for the hard cases.', 'Cybrik · WhatsApp agents', ['WhatsApp', 'Agent', 'Case file'], 'bedrock'],
+  ['A column is searched on every request.', 'Add an index', 'Cache the table', 'An index makes the lookup cheap without a cache to keep in sync.', 'Every project · Postgres', ['API', 'Query', 'Postgres'], null],
+  ['The lead picks up. Who talks first?', 'The voice agent', 'A sales rep', 'An ElevenLabs voice holds the first conversation; a rep gets the summary.', 'Voice CRM · ElevenLabs', ['Smartflo', 'ElevenLabs', 'Lead'], 'voice'],
+  ["Turn a learner's goal into a plan. What does Django call?", 'The FastAPI service', 'Gemini directly', 'One service owns prompts, retries and timeouts, so Django stays simple.', 'Planorah · FastAPI', ['Django', 'FastAPI', 'Gemini'], 'llm']
+];
+const ROUND = 10, LIMIT = 5000;
+let deck, i, score, streak, bestStreak, right, startT, raf, locked = true;
+
+function shuffle(a){ a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; }
+function show(id){ ['intro', 'card', 'end'].forEach(x => $(x).hidden = x !== id); }
+function hud(){ $('st-card').textContent = `${Math.min(i + 1, ROUND)} / ${ROUND}`; $('st-streak').textContent = streak; $('st-score').textContent = score; }
+
+function start(){
+  deck = shuffle(CARDS).slice(0, ROUND).map(c => ({ c, flip: Math.random() < .5 }));
+  i = 0; score = 0; streak = 0; bestStreak = 0; right = 0;
+  show('card'); next();
+}
+
+function next(){
+  if (i >= ROUND) return finish();
+  locked = false; hud();
+  const { c, flip } = deck[i], opts = flip ? [c[2], c[1]] : [c[1], c[2]];
+  $('q').textContent = c[0]; $('answer').innerHTML = '';
+  document.querySelectorAll('.hop').forEach((h, k) => { h.textContent = c[5][k]; h.className = 'hop'; });
+  $('packet').style.opacity = 0;
+  document.querySelectorAll('.choice').forEach((b, k) => { b.disabled = false; b.className = 'choice'; b.querySelector('span').textContent = opts[k]; b.dataset.right = opts[k] === c[1]; });
+  const card = $('card'); card.classList.remove('flip'); void card.offsetWidth; if (!reduce) card.classList.add('flip');
+  startT = performance.now(); cancelAnimationFrame(raf); tickTimer();
+}
+
+function tickTimer(){
+  const left = Math.max(0, 1 - (performance.now() - startT) / LIMIT);
+  $('bar').style.transform = `scaleX(${left})`; $('timer').classList.toggle('low', left < .3);
+  if (locked) return;
+  if (left === 0) return answer(null);
+  raf = requestAnimationFrame(tickTimer);
+}
+
+function answer(btn){
+  if (locked) return; locked = true; cancelAnimationFrame(raf);
+  const { c } = deck[i], ok = !!btn && btn.dataset.right === 'true', ms = performance.now() - startT;
+  document.querySelectorAll('.choice').forEach(b => { b.disabled = true; if (b.dataset.right === 'true') b.classList.add('right'); });
+  if (btn && !ok) btn.classList.add('wrong');
+  if (ok) { right++; streak++; bestStreak = Math.max(bestStreak, streak); score += 100 + Math.round((LIMIT - ms) / 50); if (c[6]) light([c[6]]); }
+  else streak = 0;
+  hud(); fly(ok);
+  $('answer').innerHTML = '<b class="pop"></b><span class="pop"></span>';
+  $('answer').children[0].textContent = `${ok ? 'Right.' : btn ? 'Not quite.' : 'Too slow.'} ${c[3]}`;
+  $('answer').children[1].textContent = c[4];
+  setTimeout(() => { i++; next(); }, 2400);
+}
+
+/* the request fires: on a right call the packet reaches the end, on a wrong one it dies at the middle hop */
+function fly(ok){
+  const hops = document.querySelectorAll('.hop'), p = $('packet');
+  const target = ok ? hops[2] : hops[1], x = target.offsetLeft + target.offsetWidth / 2 - 7;
+  const land = () => target.classList.add(ok ? 'ok' : 'fail');
+  if (reduce) return land();
+  p.style.opacity = 1;
+  p.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${x}px)` }], { duration: ok ? 420 : 300, easing: 'cubic-bezier(.3,.6,.2,1)', fill: 'forwards' })
+    .onfinish = () => { land(); p.style.opacity = 0; };
+}
+
+function finish(){
+  show('end');
+  const best = store.get('quiz-best') || 0; if (score > best) store.set('quiz-best', score);
+  $('end-score').textContent = `${right} / ${ROUND}`;
+  $('end-title').textContent = right >= 9 ? 'Ship it. You think like a backend engineer.' : right >= 6 ? 'Solid. A couple would have paged you at 2 am.' : 'Production would have had words with you.';
+  $('end-stats').innerHTML = '';
+  [['score', score], ['best score', Math.max(best, score)], ['longest streak', bestStreak]].forEach(([k, v]) => {
+    const li = document.createElement('li'); li.innerHTML = '<b></b> '; li.children[0].textContent = v; li.append(k); $('end-stats').appendChild(li);
+  });
+  $('again').focus({ preventScroll: true });
+}
+
+$('go').addEventListener('click', start);
+$('again').addEventListener('click', start);
+document.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => answer(b)));
+addEventListener('keydown', e => {
+  if ($('card').hidden || locked) return;
+  const k = e.key.toLowerCase();
+  if (k === 'a' || k === 'b') { e.preventDefault(); answer(document.querySelector(`.choice[data-i="${k === 'a' ? 0 : 1}"]`)); }
+});
+$('start').addEventListener('click', e => {
+  if (getComputedStyle($('play')).position === 'sticky') { e.preventDefault(); start(); document.querySelector('.choice').focus({ preventScroll: true }); }
+  else setTimeout(start, reduce ? 0 : 400);
+});
+
+/* skills light up as you answer */
+function light(list){
+  list.forEach(s => document.querySelectorAll(`[data-skill="${s}"]`).forEach(li => li.classList.add('lit')));
+  store.set('skills', [...new Set([...(store.get('skills') || []), ...list])]);
+}
+light(store.get('skills') || []);
+
+
+/* scaling wordmark: the name settles as the first screen leaves */
+const nameEl = $('name');
+if (!reduce) addEventListener('scroll', () => {
+  if (getComputedStyle(nameEl).position !== 'absolute') return;
+  const p = Math.min(1, scrollY / innerHeight);
+  nameEl.style.transform = `translateY(-100%) scale(${1 - p * .06})`; nameEl.style.opacity = 1 - p;
+}, { passive: true });
+
+/* scalloped paper edges */
+function scallop(el){
+  const n = Math.max(6, Math.round(el.offsetWidth / 60)), r = 12, top = [], bot = [];
+  for (let i = 0; i < n; i++) for (let k = 0; k <= 6; k++) {
+    const a = Math.PI - (k / 6) * Math.PI, x = (i + .5 + Math.cos(a) / 2) / n * 100;
+    top.push(`${x.toFixed(2)}% ${(r - Math.sin(a) * r).toFixed(1)}px`);
+    bot.unshift(`${x.toFixed(2)}% calc(100% - ${(r - Math.sin(a) * r).toFixed(1)}px)`);
+  }
+  el.style.clipPath = `polygon(${top.join(',')},${bot.join(',')})`;
+}
+const shape = () => document.querySelectorAll('.scallop').forEach(scallop); shape(); addEventListener('resize', shape);
+
+/* entrances */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('.rise').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

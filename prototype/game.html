@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abhinav Goyal · Route the request</title>
+<meta name="description" content="Abhinav Goyal, Python and GenAI backend engineer in Ludhiana. Play each system he has shipped: wire the request from payment to database to WhatsApp and beat his par.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0b0e14;
+  --board:#121826;
+  --tile:#1d2535;
+  --tile-hover:#27324a;
+  --visited:#25406b;
+  --ink:#eef0f4;
+  --soft:#a6aebb;
+  --paper:#e7e8e5;
+  --paper-ink:#14171d;
+  --paper-soft:#4c525c;
+  --blue:#4d9fff;
+  --gold:#f0c060;
+  --wrong:#ff8a7a;
+
+  --display:"Cormorant Garamond", Georgia, serif;
+  --text:"Outfit", system-ui, sans-serif;
+
+  --s-display:clamp(64px, 9vw, 150px);
+  --s-head:clamp(40px, 4.4vw, 68px);
+  --s-title:clamp(24px, 2vw, 30px);
+  --s-body:18px;
+  --s-small:14px;
+
+  --margin:32px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (max-width:900px){ :root{ --margin:16px; --s-body:16px; } }
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font:400 var(--s-body)/1.55 var(--text);font-variant-numeric:tabular-nums}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.skip{position:absolute;left:var(--margin);top:12px;background:var(--paper);color:var(--paper-ink);padding:12px 16px;z-index:50;font-weight:600}
+.skip:not(:focus){width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1}
+h2{font-size:var(--s-head)}
+h3{font-size:var(--s-title)}
+.soft{color:var(--soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 24px;background:var(--blue);color:#06101f;font-weight:600;text-decoration:none;border:0;cursor:pointer;transition:transform .18s var(--ease),background-color .18s}
+.btn:hover{background:#79b7ff}
+.btn:active{transform:scale(.97)}
+.btn.quiet{background:var(--tile);color:var(--ink)}
+.btn.quiet:hover{background:var(--tile-hover)}
+.link{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;transition:color .18s}
+.link:hover{color:var(--blue)}
+
+/* ---------- the split ---------- */
+.split{display:grid;grid-template-columns:50% 50%;position:relative}
+.stage{position:sticky;top:0;height:100svh;padding:20px 0 20px 20px}
+.col{padding:0 var(--margin) 0 56px;min-width:0}
+
+/* ---------- the board ---------- */
+.board{position:relative;height:100%;background:var(--board);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
+.board-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px 28px 0}
+.board-head h2{font-size:var(--s-title)}
+.board-head .mission{font-size:var(--s-small);color:var(--soft);margin-top:6px;max-width:40ch}
+.stats{display:flex;gap:20px;font-size:var(--s-small);color:var(--soft);white-space:nowrap}
+.stats b{display:block;color:var(--ink);font-size:var(--s-body);font-weight:600}
+.field{position:relative;margin:12px 28px}
+.field svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wire{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round}
+.wire-label{font:500 14px var(--text);fill:var(--ink);stroke:var(--board);stroke-width:6px;paint-order:stroke;stroke-linejoin:round}
+.labels{z-index:2;pointer-events:none}
+.packet{fill:var(--gold)}
+.node{position:absolute;transform:translate(-50%,-50%);min-width:136px;min-height:60px;padding:10px 16px;background:var(--tile);border:0;cursor:pointer;text-align:left;display:grid;gap:2px;transition:background-color .2s,transform .2s var(--ease)}
+.node b{font-weight:600;font-size:var(--s-body);line-height:1.2}
+.node span{font-size:var(--s-small);color:var(--soft);line-height:1.2}
+.node:hover{background:var(--tile-hover)}
+.node:active{transform:translate(-50%,-50%) scale(.96)}
+.node.visited{background:var(--visited)}
+.node.head{background:var(--blue);color:#06101f}
+.node.head span{color:#0b2a55}
+.node.end.done{background:var(--gold);color:var(--paper-ink)}
+.node.end.done span{color:#4d3a10}
+.node.nope{animation:nope .38s}
+@keyframes nope{25%{transform:translate(calc(-50% - 6px),-50%)}75%{transform:translate(calc(-50% + 6px),-50%)}}
+.board-foot{padding:0 28px 24px;display:grid;gap:14px}
+.status{min-height:3.1em;max-width:60ch}
+.status.bad{color:var(--wrong)}
+.status.win{color:var(--gold)}
+.board-foot .row{display:flex;gap:8px;flex-wrap:wrap}
+.levels-nav button{min-height:44px;padding:0 14px;background:var(--tile);border:0;cursor:pointer;transition:background-color .18s}
+.levels-nav button:hover{background:var(--tile-hover)}
+.levels-nav button[aria-current="true"]{background:var(--ink);color:var(--ground)}
+.levels-nav button.cleared::after{content:" · cleared";color:inherit;opacity:.85}
+.nojs{padding:28px;color:var(--soft)}
+.js .nojs{display:none}
+
+/* ---------- hero ---------- */
+.nav{display:flex;justify-content:flex-end;gap:24px;align-items:center;padding-top:22px;flex-wrap:wrap}
+.nav a:not(.btn){text-decoration:none}
+.nav a:not(.btn):hover{color:var(--blue)}
+.nav .btn{min-height:44px;padding:0 18px}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:96px 0 30vh}
+.split > .nav{position:absolute;top:0;left:50%;right:var(--margin);z-index:4}
+.hero p.lead{font-family:var(--display);font-size:var(--s-title);line-height:1.2;font-weight:500;max-width:26ch}
+.hero ul{list-style:none;color:var(--soft);display:grid;gap:4px}
+.hero .row{display:flex;gap:12px;flex-wrap:wrap}
+.name{position:absolute;left:38vw;right:var(--margin);top:calc(100svh - 40px);overflow:hidden;transform:translateY(-100%);z-index:3;pointer-events:none;
+  font:500 var(--s-display)/.85 var(--display);letter-spacing:-.04em;white-space:nowrap;text-align:right;transform-origin:right bottom}
+
+/* ---------- levels ---------- */
+.levels{padding-top:40px}
+.levels > h2{margin-bottom:24px}
+.levels > p{max-width:46ch;margin-bottom:24px}
+.level{min-height:100svh;padding:72px 0;display:grid;gap:20px;align-content:center}
+.level figure img{aspect-ratio:16/10;object-fit:cover;width:100%;filter:grayscale(1) contrast(1.05)}
+.level figcaption{font-size:var(--s-small);color:var(--soft);margin-top:8px}
+.level h3{font-size:var(--s-head)}
+.level .tag{color:var(--soft)}
+.level p{max-width:46ch}
+.level dl{display:grid;grid-template-columns:auto 1fr;gap:8px 20px;max-width:52ch}
+.level dt{color:var(--soft)}
+.level ol{padding-left:22px;color:var(--soft);display:grid;gap:2px}
+.js .level ol.path{display:none}
+.chatart{aspect-ratio:16/10;background:#dfe3df;padding:24px;display:flex;flex-direction:column;gap:10px;justify-content:center;color:#141821;font-size:15px}
+.chatart div{max-width:76%;padding:10px 13px;background:#fff}
+.chatart .out{align-self:flex-end;background:#d8f6c6}
+
+/* ---------- skill sheet ---------- */
+.skills{padding:120px 0}
+.sheet{background:var(--paper);color:var(--paper-ink);padding:64px 56px}
+.sheet h2{text-align:center}
+.sheet > p{text-align:center;color:var(--paper-soft);margin:12px auto 0;max-width:40ch}
+.group{margin-top:64px}
+.group h3{text-align:center;margin-bottom:16px}
+.group ul{list-style:none;display:grid;gap:10px}
+.group li{display:flex;justify-content:space-between;gap:16px;align-items:baseline;transition:background-color .4s}
+.group li span:last-child{color:var(--paper-soft);white-space:nowrap}
+.group li.lit{background:var(--gold)}
+.group li.lit span:last-child{color:var(--paper-ink)}
+
+/* ---------- experience ---------- */
+.exp{padding:40px 0 160px}
+.exp h2{margin-bottom:32px}
+.job{display:grid;grid-template-columns:1fr auto;gap:4px 24px;padding:20px 24px}
+.job + .job{margin-top:8px}
+.job h3{font-size:var(--s-title)}
+.job .when{color:var(--soft);text-align:right}
+.job p{grid-column:1 / -1;max-width:52ch}
+.job:nth-child(even){background:var(--board)}
+
+/* ---------- contact: full width, inverse ---------- */
+.contact{background:var(--paper);color:var(--paper-ink);padding:96px var(--margin) 40px;display:grid;gap:56px}
+.contact p.ask{font-size:var(--s-title);font-family:var(--display);line-height:1.2;max-width:30ch}
+.contact h2{align-self:end;font:500 var(--s-display)/.9 var(--display);letter-spacing:-.04em}
+.contact h2 a{text-decoration:none;transition:color .2s}
+.contact h2 a:hover{color:#1a56b0}
+.contact .corners{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:var(--s-small)}
+.contact .corners a{margin-left:16px}
+
+/* ---------- footer ---------- */
+footer{display:grid;grid-template-columns:1fr 1fr;min-height:100svh}
+footer > img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.75)}
+.menu{padding:80px var(--margin) 32px 56px;display:grid;grid-template-rows:auto 1fr auto;gap:40px}
+.menu .mark{font:600 var(--s-title)/1 var(--display)}
+.menu ul{list-style:none;display:grid;gap:20px;align-content:start}
+.menu ul a{font:600 var(--s-head)/1 var(--display);text-decoration:none;display:inline-block;transition:transform .2s var(--ease),color .2s}
+.menu ul a:hover{transform:translateX(12px);color:var(--blue)}
+.credits{font-size:var(--s-small);color:var(--soft);max-width:60ch}
+
+/* ---------- phone ---------- */
+@media (max-width:900px){
+  .split{display:flex;flex-direction:column}
+  .stage{position:relative;height:auto;padding:0;order:2}
+  .board{min-height:640px;height:auto}
+  .field{height:420px}
+  .col{display:contents}
+  .col > *{padding-inline:var(--margin)}
+  .hero{order:1;min-height:0;padding:20px var(--margin) 56px}
+  .split > .nav{position:static;order:0;justify-content:flex-end;padding:16px var(--margin) 0}
+  .nav a:not(.btn):not(:last-of-type){display:none}
+  .name{order:0;padding-inline:var(--margin) !important;position:static;transform:none;font-size:clamp(52px,15vw,96px);white-space:normal;text-align:left;order:0;padding:28px 0 0;line-height:.9}
+  .levels{order:3}.skills{order:4}.exp{order:5}
+  .board-head{flex-direction:column;padding:20px 16px 0}
+  .field{margin:12px 8px}
+  .node{min-width:92px;min-height:48px;padding:6px 10px}
+  .board-foot{padding:0 16px 20px}
+  .level{min-height:0;padding:56px 0}
+  .sheet{padding:48px 20px}
+  .contact h2{font-size:11.5vw}
+  footer{grid-template-columns:1fr}
+  footer > img{height:50svh}
+  .menu{padding:48px var(--margin) 32px}
+}
+@media (max-width:900px){ .hero-wrap{order:1} }
+
+/* ---------- entrances ---------- */
+.js .rise{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--i,0) * 80ms)}
+.js .rise.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .js .rise{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<script>document.documentElement.classList.add('js')</script>
+
+<main id="main">
+<div class="split">
+  <nav class="nav" aria-label="Main">
+    <a href="#levels">Levels</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#resume">Résumé</a>
+    <a class="btn" href="#contact">Hire me</a>
+  </nav>
+  <h1 class="name" id="name">abhinav goyal</h1>
+
+  <!-- the board: one fixed half that never leaves -->
+  <div class="stage" id="play">
+    <section class="board" aria-labelledby="lvl-name">
+      <div class="board-head">
+        <div>
+          <h2 id="lvl-name">Flexo: the renewal</h2>
+          <p class="mission" id="lvl-mission">Get a member's ₹1,499 renewal from checkout to a read receipt.</p>
+        </div>
+        <div class="stats" aria-live="off">
+          <div>Moves / par<b id="st-moves">0 / 5</b></div>
+          <div>Time<b id="st-time">0.0 s</b></div>
+          <div>Your best<b id="st-best">none</b></div>
+        </div>
+      </div>
+      <div class="field" id="field">
+        <svg id="wires" aria-hidden="true"></svg>
+        <svg id="labels" class="labels" aria-hidden="true"></svg>
+        <p class="nojs">Turn on JavaScript to play. Each level's request path is written out beside it.</p>
+      </div>
+      <div class="board-foot">
+        <p class="status" id="status" aria-live="polite">The request starts at the blue tile. Pick where it goes next.</p>
+        <div class="row">
+          <div class="row levels-nav" id="levels-nav" role="group" aria-label="Choose a level"></div>
+          <button class="btn quiet" type="button" id="reset">Restart level</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <div class="hero" id="top">
+      <p class="lead rise">Backend and GenAI engineer in Ludhiana. Every level here is a system I've shipped.</p>
+      <ul class="rise" style="--i:1">
+        <li>Software Developer at Cybrik Solutions</li>
+        <li>Founder of Planorah</li>
+        <li>Flexo runs renewals for 20+ gyms</li>
+      </ul>
+      <div class="row rise" style="--i:2">
+        <a class="btn" href="#play" id="start">Route a request, beat my par</a>
+      </div>
+    </div>
+
+    <section class="levels" id="levels" aria-labelledby="levels-h">
+      <h2 id="levels-h">Four levels</h2>
+      <p>Wrong moves aren't wasted: each one tells you why that call would break in production.</p>
+
+      <article class="level" data-level="flexo" aria-labelledby="l-flexo">
+        <h3 id="l-flexo" class="rise">Flexo</h3>
+        <p class="tag rise">Multi-tenant gym SaaS · 20+ paying gyms across India</p>
+        <figure class="rise"><img src="assets/dumbells-and-free-weights-in-a-gym.jpg" width="1920" height="1395" alt="Racks of dumbbells and free weights on a gym floor" loading="lazy" decoding="async"><figcaption>A gym floor. Flexo runs the front desk behind it.</figcaption></figure>
+        <p class="rise">Members, plans, attendance and renewals for gyms across India. Every query is scoped to its gym, renewals are reminded on WhatsApp and paid through Razorpay, and each payment binds to the member's record. I own it end to end: schema, build, deploy and production support.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Next.js, Supabase Postgres, Prisma, Razorpay, Meta WhatsApp Business API</dd><dt>Unlocks</dt><dd>Webhooks &amp; payments, Multi-tenancy, WhatsApp Business API</dd></dl>
+        <ol class="path"><li>Member pays in Razorpay checkout</li><li>Signed webhook to the Next.js API</li><li>Tenant-scoped write to Postgres</li><li>WhatsApp template sent</li><li>Read in the member's chat</li></ol>
+        <p class="rise"><button class="btn quiet" type="button" data-play="flexo">Play Flexo</button></p>
+      </article>
+
+      <article class="level" data-level="planorah" aria-labelledby="l-planorah">
+        <h3 id="l-planorah" class="rise">Planorah</h3>
+        <p class="tag rise">My company · AI learning roadmaps · ₹0, ₹99, ₹249, ₹499</p>
+        <figure class="rise"><img src="assets/old-library-history-reading-room-1964-3925726829.jpg" width="1920" height="1439" alt="Students reading at long tables in a library reading room, 1964" loading="lazy" decoding="async"><figcaption>A reading room, 1964. Planorah plans what happens in one.</figcaption></figure>
+        <p class="rise">A learner states a goal and the hours they have; Planorah returns a week-by-week roadmap. A Django monolith owns the product, Gemini 2.5 Flash drafts the plan in a FastAPI service, and a behavioural engine reshapes it around how that learner actually studies. Celery keeps the slow work out of the request.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Django, Postgres, Celery, FastAPI, Gemini 2.5 Flash, Razorpay, Nginx and Gunicorn</dd><dt>Unlocks</dt><dd>Task queues, LLM integration, Structured output</dd></dl>
+        <ol class="path"><li>Learner submits a goal</li><li>Django validates it</li><li>Job queued on Celery</li><li>FastAPI service calls Gemini</li><li>JSON checked against the schema</li><li>Behavioural engine reorders</li><li>Saved to Postgres</li></ol>
+        <p class="rise"><button class="btn quiet" type="button" data-play="planorah">Play Planorah</button></p>
+      </article>
+
+      <article class="level" data-level="crm" aria-labelledby="l-crm">
+        <h3 id="l-crm" class="rise">Voice CRM</h3>
+        <p class="tag rise">White-label B2B · AI calls and WhatsApp</p>
+        <figure class="rise"><img src="assets/army-switchboard-operators.jpg" width="1920" height="1234" alt="Two telephone operators taking calls in front of a long switchboard, 1940s" loading="lazy" decoding="async"><figcaption>Switchboard operators, 1940s: the job the dialler now does.</figcaption></figure>
+        <p class="rise">A new lead gets a phone call, not a spreadsheet row. Tata Smartflo places the call, an ElevenLabs voice holds the conversation, the transcript is summarised back onto the lead, and a WhatsApp follow-up goes out. Nobody dials.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Python, Tata Smartflo, ElevenLabs, Meta WhatsApp Business API, Postgres</dd><dt>Unlocks</dt><dd>Telephony, Voice AI, Event-driven follow-ups</dd></dl>
+        <ol class="path"><li>Lead arrives from a form</li><li>Saved to the CRM, call queued</li><li>Tata Smartflo dials</li><li>ElevenLabs voice talks</li><li>Transcript summarised by an LLM</li><li>WhatsApp follow-up sent</li></ol>
+        <p class="rise"><button class="btn quiet" type="button" data-play="crm">Play Voice CRM</button></p>
+      </article>
+
+      <article class="level" data-level="cybrik" aria-labelledby="l-cybrik">
+        <h3 id="l-cybrik" class="rise">Cybrik</h3>
+        <p class="tag rise">Day job · AI voice agents on WhatsApp</p>
+        <figure class="rise">
+          <div class="chatart" role="img" aria-label="A WhatsApp conversation in which an agent books a biometrics appointment">
+            <div>My student visa file went in last week. What's next?</div>
+            <div class="out">Biometrics. I can book Tuesday 11:00 or Thursday 15:30.</div>
+            <div>Thursday please</div>
+            <div class="out">Booked. The document checklist is on its way as a voice note.</div>
+          </div>
+          <figcaption>An agent conversation. Sample client.</figcaption>
+        </figure>
+        <p class="rise">At Cybrik Solutions I build agents that answer on WhatsApp for an immigration-services client: documents, visa stages and appointments, handled in conversation and passed to a person when it matters. Django and Flask services, LLMs through AWS Bedrock.</p>
+        <dl class="rise"><dt>Stack</dt><dd>Django, Flask, AWS Bedrock, WhatsApp, Postgres</dd><dt>Unlocks</dt><dd>AWS Bedrock, Agent tools, RAG</dd></dl>
+        <ol class="path"><li>Client messages on WhatsApp</li><li>Webhook to the Django service</li><li>Bedrock agent reads the intent</li><li>Looks up the case file</li><li>Books the calendar slot</li><li>Replies on WhatsApp</li></ol>
+        <p class="rise"><button class="btn quiet" type="button" data-play="cybrik">Play Cybrik</button></p>
+      </article>
+    </section>
+
+    <section class="skills" id="skills" aria-labelledby="skills-h">
+      <div class="sheet scallop rise">
+        <h2 id="skills-h">Skill sheet</h2>
+        <p>What I ship with today and what I'm learning next. Clear a level and its skills light up.</p>
+        <div class="group"><h3>Backend</h3><ul>
+          <li><span>Python, Django, Flask, FastAPI</span><span>Shipped</span></li>
+          <li data-skill="webhooks"><span>Webhooks &amp; payments</span><span>Shipped</span></li>
+          <li data-skill="tenancy"><span>Multi-tenant schema design</span><span>Shipped</span></li>
+          <li data-skill="queues"><span>Celery task queues</span><span>Shipped</span></li>
+          <li><span>REST API design, auth</span><span>Shipped</span></li>
+        </ul></div>
+        <div class="group"><h3>GenAI</h3><ul>
+          <li data-skill="llm"><span>LLM integration, Gemini, prompts</span><span>Shipped</span></li>
+          <li data-skill="bedrock"><span>AWS Bedrock</span><span>Shipped</span></li>
+          <li data-skill="structured"><span>Structured output and validation</span><span>Shipped</span></li>
+          <li data-skill="rag"><span>RAG, embeddings, vector search</span><span>Learning</span></li>
+          <li><span>Vertex AI, agentic systems</span><span>Learning</span></li>
+        </ul></div>
+        <div class="group"><h3>Calls and messages</h3><ul>
+          <li data-skill="whatsapp"><span>Meta WhatsApp Business API</span><span>Shipped</span></li>
+          <li data-skill="telephony"><span>Tata Smartflo telephony</span><span>Shipped</span></li>
+          <li data-skill="voice"><span>ElevenLabs voice</span><span>Shipped</span></li>
+        </ul></div>
+        <div class="group"><h3>Cloud and data</h3><ul>
+          <li><span>Postgres, Supabase, Prisma, SQLAlchemy</span><span>Shipped</span></li>
+          <li><span>AWS EC2, RDS; GCP Cloud Run, Cloud SQL</span><span>Shipped</span></li>
+          <li><span>Linux, Nginx, Gunicorn, CI/CD</span><span>Shipped</span></li>
+        </ul></div>
+      </div>
+    </section>
+
+    <section class="exp" id="experience" aria-labelledby="exp-h">
+      <h2 id="exp-h">Where I've worked</h2>
+      <article class="job rise"><h3>Cybrik Solutions</h3><span class="when">Nov 2025 to now</span><p>Software Developer. GenAI backend services in Django and Flask on AWS Bedrock; REST APIs owned from design to production; slow endpoints profiled and SQL rewritten.</p></article>
+      <article class="job rise"><h3>Planorah</h3><span class="when">Jul 2025 to now</span><p>Founder and sole engineer. Backend, APIs, auth, progress tracking, frontend, and the Linux box it runs on.</p></article>
+      <article class="job rise"><h3>NexBuild Labs</h3><span class="when">Ongoing</span><p>My web and SEO agency for local businesses.</p></article>
+      <article class="job rise"><h3>Corediva Inc.</h3><span class="when">Jul to Sep 2025</span><p>Python Developer Intern. Flask backends, and email-marketing and billing modules that replaced a manual workflow.</p></article>
+      <article class="job rise"><h3>Study</h3><span class="when">MCA expected 2027</span><p>MCA at Amity University; BCA, Panjab University, 2025; Certificate in AI &amp; Machine Learning, IIT Hyderabad, 2026.</p></article>
+    </section>
+  </div>
+</div>
+
+<section class="contact" id="contact" aria-labelledby="contact-h">
+  <p class="ask">Have a system that takes money, places calls or sends messages? Write to me.</p>
+  <h2 id="contact-h"><a href="mailto:abhinavgoyal9729@gmail.com?subject=A%20backend%20to%20build">abhinavgoyal9729@<br>gmail.com</a></h2>
+  <div class="corners">
+    <span>Ludhiana, Punjab · IST, UTC+5:30</span>
+    <span><a class="link" href="https://github.com/Abhinav6284">GitHub</a><a class="link" href="https://linkedin.com/in/abhinav-goyal">LinkedIn</a><a class="link" href="#resume" id="resume">Résumé (PDF)</a></span>
+  </div>
+</section>
+</main>
+
+<footer>
+  <img src="assets/clock-tower-ludhiana.jpg" width="1920" height="2560" alt="Ludhiana's clock tower above a busy street" loading="lazy" decoding="async">
+  <div class="menu">
+    <p class="mark">abhinav goyal</p>
+    <ul>
+      <li><a href="#play">Play</a></li>
+      <li><a href="#levels">Levels</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p class="credits">© 2026 Abhinav Goyal. Photographs, shown in greyscale: “Dumbells and free weights in a gym”, Wikimedia Commons, CC BY-SA 4.0; “Old Library, History Reading Room, 1964”, no known copyright restrictions; “Army Switchboard Operators”, US Army Signal Corps, public domain; “Clock tower Ludhiana” by Deepu.dhaipai, CC BY-SA 4.0.</p>
+  </div>
+</footer>
+
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- levels: real request paths, with decoys that teach ---------- */
+const LEVELS = {
+  flexo: {
+    name: 'Flexo: the renewal', mission: "Get a member's ₹1,499 renewal from checkout to a read receipt.",
+    nodes: {
+      member: ['Member', 'taps renew', 12, 18], razorpay: ['Razorpay', 'checkout', 44, 12], api: ['Next.js API', 'on Vercel', 80, 30],
+      db: ['Postgres', 'Supabase · Prisma', 62, 62], wa: ['WhatsApp API', 'Meta Cloud', 26, 80], chat: ["Member's chat", 'receipt', 80, 86],
+      confirm: ['Browser confirm', 'client says paid', 20, 50], cron: ['Nightly cron', 'batch renewals', 50, 38]
+    },
+    path: ['member', 'razorpay', 'api', 'db', 'wa', 'chat'],
+    labels: ['checkout', 'signed webhook', 'scoped write', 'template', 'read'],
+    ms: [0, 380, 90, 410, 1200],
+    tips: {
+      confirm: "Trusting the browser's \"paid\" lets anyone fake a renewal. Flexo only believes Razorpay's signed webhook.",
+      cron: 'A nightly batch would renew members hours late. The webhook renews them in under a second.',
+      db: 'Never let anything outside your API write to the database. Every write goes through tenant-scoped code.',
+      wa: "Don't message the member before the payment is saved. A failed write would leave a receipt for nothing."
+    },
+    unlock: ['webhooks', 'tenancy', 'whatsapp']
+  },
+  planorah: {
+    name: 'Planorah: the roadmap', mission: 'Turn a learner’s goal into a validated 12-week plan without blocking the web server.',
+    nodes: {
+      learner: ['Learner', 'states a goal', 12, 14], django: ['Django', 'validates', 46, 20], celery: ['Celery', 'queues the job', 82, 16],
+      fastapi: ['FastAPI', 'generation service', 76, 48], gemini: ['Gemini 2.5 Flash', 'drafts the plan', 46, 56], schema: ['Schema check', 'rejects bad JSON', 16, 50],
+      engine: ['Behaviour engine', 'reorders by habits', 24, 84], pg: ['Postgres', 'saves the roadmap', 66, 84],
+      inline: ['Call in request', 'wait on the LLM', 14, 32]
+    },
+    path: ['learner', 'django', 'celery', 'fastapi', 'gemini', 'schema', 'engine', 'pg'],
+    labels: ['goal', 'enqueue', 'task', 'prompt', 'draft', 'valid plan', 'tuned plan'],
+    ms: [90, 30, 120, 5900, 80, 600, 200],
+    tips: {
+      inline: 'Generation takes seconds. Waiting inside the web request ties up a Gunicorn worker per learner, so it goes on a queue.',
+      gemini: 'Django never calls the model directly. The FastAPI service owns prompts, retries and timeouts.',
+      pg: "Don't save a model's output before it has passed the schema check; one bad JSON would break the learner's page.",
+      engine: 'The engine tunes a plan that already exists. It needs the validated draft first.'
+    },
+    unlock: ['queues', 'llm', 'structured']
+  },
+  crm: {
+    name: 'Voice CRM: the lead call', mission: 'Call a new lead within seconds, summarise the call and follow up on WhatsApp. Nobody dials.',
+    nodes: {
+      form: ['Web form', 'new lead', 12, 16], crm: ['CRM', 'saves, queues call', 48, 14], smartflo: ['Tata Smartflo', 'places the call', 84, 28],
+      voice: ['ElevenLabs', 'voice agent', 70, 60], llm: ['LLM summary', 'onto the lead', 36, 54], wa: ['WhatsApp API', 'follow-up', 18, 84],
+      human: ['Sales rep', 'dials by hand', 64, 86], sheet: ['Spreadsheet', 'export leads', 18, 40]
+    },
+    path: ['form', 'crm', 'smartflo', 'voice', 'llm', 'wa'],
+    labels: ['lead', 'call job', 'connected', 'transcript', 'summary'],
+    ms: [120, 4000, 7000, 2500, 900],
+    tips: {
+      human: 'The whole point: nobody dials. The call is placed by Smartflo the moment the lead lands.',
+      sheet: 'A spreadsheet row is where leads go cold. This one gets a call within seconds.',
+      voice: 'ElevenLabs speaks on a call that already exists. Smartflo has to connect it first.',
+      wa: 'Follow up after the call, with what was said in it. That needs the summary first.'
+    },
+    unlock: ['telephony', 'voice', 'whatsapp']
+  },
+  cybrik: {
+    name: 'Cybrik: the visa desk', mission: 'Answer a client on WhatsApp, look up their case and book biometrics, without a person.',
+    nodes: {
+      client: ['Client', 'on WhatsApp', 12, 16], hook: ['Webhook', 'Django service', 46, 22], agent: ['Bedrock agent', 'reads intent', 82, 18],
+      cases: ['Case file', 'documents, stage', 74, 54], cal: ['Calendar', 'books a slot', 40, 62], reply: ['WhatsApp reply', 'voice note', 14, 84],
+      handoff: ['Human handoff', 'staff takes over', 70, 86], email: ['Email ticket', 'reply tomorrow', 14, 46]
+    },
+    path: ['client', 'hook', 'agent', 'cases', 'cal', 'reply'],
+    labels: ['message', 'event', 'look up', 'next stage', 'booked'],
+    ms: [150, 900, 120, 300, 700],
+    tips: {
+      handoff: 'Handoff is for the hard cases. A routine booking should never wait for a person.',
+      email: "The client is on WhatsApp now. An email ticket answered tomorrow is how clients drift away.",
+      cal: "The agent can't book biometrics before it knows which stage the file is at."
+    },
+    unlock: ['bedrock', 'rag']
+  }
+};
+
+const field = document.getElementById('field'), svg = document.getElementById('wires'), labels = document.getElementById('labels');
+const $ = id => document.getElementById(id);
+const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+let L, key, step, moves, t0, tick, busy = false;
+
+/* level buttons */
+const nav = $('levels-nav');
+Object.entries(LEVELS).forEach(([k, l]) => {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.level = k; b.textContent = l.name.split(':')[0];
+  if (store.get('best:' + k)) b.classList.add('cleared');
+  b.addEventListener('click', () => load(k)); nav.appendChild(b);
+});
+
+function load(k){
+  key = k; L = LEVELS[k]; step = 0; moves = 0; t0 = null; busy = false; clearInterval(tick);
+  $('lvl-name').textContent = L.name; $('lvl-mission').textContent = L.mission;
+  $('st-moves').textContent = `0 / ${L.path.length - 1}`; $('st-time').textContent = '0.0 s';
+  const best = store.get('best:' + k); $('st-best').textContent = best ? `${best.t.toFixed(1)} s` : 'none';
+  nav.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', b.dataset.level === k));
+  field.querySelectorAll('.node').forEach(n => n.remove()); svg.innerHTML = ''; labels.innerHTML = '';
+  for (const [id, [name, sub, x, y]] of Object.entries(L.nodes)) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'node'; b.dataset.id = id;
+    b.style.left = x + '%'; b.style.top = y + '%';
+    b.innerHTML = '<b></b><span></span>'; b.children[0].textContent = name; b.children[1].textContent = sub;
+    if (id === L.path[L.path.length - 1]) b.classList.add('end');
+    b.addEventListener('click', () => pick(id)); field.appendChild(b);
+  }
+  place();
+  node(L.path[0]).classList.add('head');
+  say(`The request starts at ${L.nodes[L.path[0]][0]}. Pick where it goes next.`);
+}
+function place(){
+  const W = field.clientWidth, H = field.clientHeight;
+  field.querySelectorAll('.node').forEach(n => {
+    const [, , x, y] = L.nodes[n.dataset.id], w = n.offsetWidth / 2, h = n.offsetHeight / 2;
+    n.style.left = Math.min(W - w, Math.max(w, x / 100 * W)) + 'px'; n.style.top = Math.min(H - h, Math.max(h, y / 100 * H)) + 'px';
+  });
+}
+const node = id => field.querySelector(`.node[data-id="${id}"]`);
+const say = (msg, cls = '') => { const s = $('status'); s.textContent = msg; s.className = 'status ' + cls; };
+const centre = id => { const n = node(id), f = field.getBoundingClientRect(), r = n.getBoundingClientRect(); return [r.left - f.left + r.width / 2, r.top - f.top + r.height / 2]; };
+
+function pick(id){
+  if (busy || step >= L.path.length - 1) return;
+  if (id === L.path[step]) return;
+  if (t0 === null) { t0 = performance.now(); tick = setInterval(() => $('st-time').textContent = ((performance.now() - t0) / 1000).toFixed(1) + ' s', 100); }
+  moves++; $('st-moves').textContent = `${moves} / ${L.path.length - 1}`;
+  const want = L.path[step + 1];
+  if (id !== want) {
+    const n = node(id); n.classList.remove('nope'); void n.offsetWidth; n.classList.add('nope');
+    say(L.tips[id] || `Not yet: ${L.nodes[id][0]} comes later, or not at all.`, 'bad'); return;
+  }
+  const from = L.path[step]; step++;
+  wire(from, id, L.labels[step - 1], L.ms[step - 1]);
+}
+
+function wire(a, b, label, ms){
+  busy = true;
+  const [x1, y1] = centre(a), [x2, y2] = centre(b), ns = 'http://www.w3.org/2000/svg';
+  const line = document.createElementNS(ns, 'path'); line.setAttribute('class', 'wire'); line.setAttribute('d', `M${x1} ${y1} L${x2} ${y2}`);
+  svg.appendChild(line);
+  const t = document.createElementNS(ns, 'text'); t.setAttribute('class', 'wire-label'); t.setAttribute('x', (x1 + x2) / 2); t.setAttribute('y', (y1 + y2) / 2 + 4); t.setAttribute('text-anchor', 'middle');
+  t.textContent = `${label} · ${ms >= 1000 ? (ms / 1000).toFixed(1) + ' s' : ms + ' ms'}`; labels.appendChild(t);
+  const done = () => {
+    node(a).classList.remove('head'); node(a).classList.add('visited'); node(b).classList.add('head'); busy = false;
+    if (step === L.path.length - 1) win(); else say(`${L.nodes[b][0]} has it. Where next?`);
+  };
+  if (reduce) return done();
+  const len = line.getTotalLength(); line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+  line.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 380, easing: 'ease-out', fill: 'forwards' });
+  const dot = document.createElementNS(ns, 'circle'); dot.setAttribute('class', 'packet'); dot.setAttribute('r', 7); svg.appendChild(dot);
+  dot.animate([{ transform: `translate(${x1}px,${y1}px)` }, { transform: `translate(${x2}px,${y2}px)` }], { duration: 520, easing: 'cubic-bezier(.3,.6,.2,1)', fill: 'forwards' })
+    .onfinish = () => { dot.remove(); done(); };
+}
+
+function win(){
+  clearInterval(tick);
+  const t = (performance.now() - t0) / 1000, par = L.path.length - 1, prev = store.get('best:' + key);
+  if (!prev || t < prev.t) store.set('best:' + key, { t, moves });
+  $('st-best').textContent = `${Math.min(t, prev ? prev.t : t).toFixed(1)} s`;
+  node(L.path[par]).classList.add('done');
+  nav.querySelector(`[data-level="${key}"]`).classList.add('cleared');
+  const total = L.ms.reduce((a, b) => a + b, 0);
+  say(`Cleared in ${moves} moves (par ${par}), ${t.toFixed(1)} s. The real request takes about ${total >= 1000 ? (total / 1000).toFixed(1) + ' s' : total + ' ms'}. Skills unlocked below.`, 'win');
+  light(L.unlock, true);
+}
+
+function light(list, fresh){
+  list.forEach(s => document.querySelectorAll(`[data-skill="${s}"]`).forEach(li => li.classList.add('lit')));
+  const all = new Set([...(store.get('skills') || []), ...list]); store.set('skills', [...all]);
+}
+light(store.get('skills') || []);
+
+$('reset').addEventListener('click', () => load(key));
+document.querySelectorAll('[data-play]').forEach(b => b.addEventListener('click', () => {
+  load(b.dataset.play);
+  const stage = $('play'); if (getComputedStyle(stage).position !== 'sticky') stage.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  node(L.path[1]) && field.querySelector('.node').focus();
+}));
+$('start').addEventListener('click', e => { if (getComputedStyle($('play')).position === 'sticky') { e.preventDefault(); field.querySelector('.node').focus(); } });
+
+/* the board follows the level you're reading (desktop) */
+const lvIO = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting && getComputedStyle($('play')).position === 'sticky' && e.target.dataset.level !== key && step === 0) load(e.target.dataset.level);
+}), { threshold: .5 });
+document.querySelectorAll('.level').forEach(l => lvIO.observe(l));
+
+addEventListener('resize', () => { if (step > 0) load(key); else place(); });
+load('flexo');
+
+/* scaling wordmark: the name settles as the first screen leaves */
+const nameEl = $('name');
+if (!reduce) addEventListener('scroll', () => {
+  if (getComputedStyle(nameEl).position !== 'absolute') return;
+  const p = Math.min(1, scrollY / innerHeight);
+  nameEl.style.transform = `translateY(-100%) scale(${1 - p * .06})`; nameEl.style.opacity = 1 - p;
+}, { passive: true });
+
+/* scalloped paper edges */
+function scallop(el){
+  const n = Math.max(6, Math.round(el.offsetWidth / 60)), r = 12, top = [], bot = [];
+  for (let i = 0; i < n; i++) for (let k = 0; k <= 6; k++) {
+    const a = Math.PI - (k / 6) * Math.PI, x = (i + .5 + Math.cos(a) / 2) / n * 100;
+    top.push(`${x.toFixed(2)}% ${(r - Math.sin(a) * r).toFixed(1)}px`);
+    bot.unshift(`${x.toFixed(2)}% calc(100% - ${(r - Math.sin(a) * r).toFixed(1)}px)`);
+  }
+  el.style.clipPath = `polygon(${top.join(',')},${bot.join(',')})`;
+}
+const shape = () => document.querySelectorAll('.scallop').forEach(scallop); shape(); addEventListener('resize', shape);
+
+/* entrances */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('.rise').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abhinav Goyal · Backend engineer</title>
+<meta name="description" content="Abhinav Goyal is a Python and GenAI backend engineer in Ludhiana, Punjab, building the systems behind payments, phone calls and WhatsApp messages.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --ground:#0b0e14;
+  --ground-2:#11161f;
+  --band-1:#141a25;
+  --band-2:#19202d;
+  --band-3:#1e2636;
+  --band-4:#232c3e;
+  --band-5:#283246;
+  --ink:#eef0f4;
+  --soft:#a6aebb;
+  --paper:#e7e8e5;
+  --paper-2:#d8dad6;
+  --paper-ink:#14171d;
+  --paper-soft:#4c525c;
+  --blue:#4d9fff;
+  --blue-ink:#1a56b0;
+  --gold:#f0c060;
+
+  --display:"Cormorant Garamond", Georgia, serif;
+  --text:"Outfit", system-ui, sans-serif;
+
+  --s-display:clamp(56px, 7.2vw, 116px);
+  --s-head:clamp(40px, 4.4vw, 68px);
+  --s-title:clamp(24px, 2vw, 30px);
+  --s-body:17px;
+  --s-small:14px;
+
+  --margin:32px;
+  --gap:24px;
+  --section:180px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (max-width:760px){ :root{ --margin:16px; --gap:16px; --section:112px; --s-body:16px; } }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--text);font-size:var(--s-body);line-height:1.55;font-variant-numeric:tabular-nums}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.paper :focus-visible{outline-color:var(--blue-ink)}
+::selection{background:var(--gold);color:var(--paper-ink)}
+.skip{position:absolute;left:var(--margin);top:-60px;background:var(--paper);color:var(--paper-ink);padding:12px 16px;z-index:50;font-weight:600}
+.skip:focus{top:12px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.frame{padding-inline:var(--margin)}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1}
+h2.head{font-size:var(--s-head)}
+.paper{background:var(--paper);color:var(--paper-ink)}
+
+/* buttons: square, one fill */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;background:var(--blue);color:#06101f;font:600 var(--s-body)/1 var(--text);text-decoration:none;border:0;cursor:pointer;transition:transform .18s var(--ease), background-color .18s}
+.btn:hover{background:#79b7ff}
+.btn:active{transform:translateY(1px) scale(.98)}
+.paper .btn{background:var(--paper-ink);color:var(--paper)}
+.paper .btn:hover{background:var(--blue-ink)}
+.link{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px;transition:color .18s}
+.link:hover{color:var(--blue)}
+.paper .link:hover{color:var(--blue-ink)}
+
+/* ---------- nav ---------- */
+.nav{position:absolute;inset:0 0 auto 0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:20px var(--margin)}
+.nav .mark{font:600 var(--s-title)/1 var(--display);text-decoration:none}
+.nav ul{list-style:none;display:flex;gap:28px;align-items:center}
+.nav ul a{text-decoration:none;font-weight:500}
+.nav ul a:hover{color:var(--blue)}
+@media (max-width:760px){ .nav ul li:not(:last-child){display:none} }
+
+/* ---------- hero: receipt over a dim city ---------- */
+.hero{position:relative;min-height:100svh;display:grid;place-items:center;padding:96px var(--margin) 72px;overflow:hidden}
+.hero > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.48) contrast(1.05);transform:scale(1.06);animation:drift 24s var(--ease) forwards}
+@keyframes drift{to{transform:scale(1)}}
+.receipt{position:relative;width:min(1000px,100%);padding:36px 40px 56px;display:grid;gap:40px}
+.receipt h1{font-size:var(--s-display);display:flex;justify-content:space-between;gap:24px;line-height:.92}
+.receipt .facts{display:grid;grid-template-columns:5fr 7fr;gap:var(--gap);align-items:start}
+.receipt .facts ul{list-style:none;font-size:var(--s-body);line-height:1.5;font-weight:500}
+.receipt .facts p{font-family:var(--display);font-size:var(--s-title);line-height:1.15;font-weight:500;max-width:26ch}
+.receipt .foot{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--gap);padding-top:28px;border-top:5px dotted var(--paper-ink)}
+.receipt .foot .meta{font-size:var(--s-small);color:var(--paper-soft)}
+.receipt .foot .right{justify-self:end}
+@media (max-width:760px){
+  .hero{padding:84px var(--margin) 40px;place-items:end center}
+  .receipt{padding:24px 20px 44px;gap:28px}
+  .receipt h1{flex-direction:column;gap:0;font-size:clamp(56px,17vw,84px)}
+  .receipt .facts{grid-template-columns:1fr}
+  .receipt .foot{grid-template-columns:1fr;justify-items:start}
+  .receipt .foot .btn{width:100%}
+  .receipt .foot .right{justify-self:start}
+}
+
+/* ---------- work: stacked folders ---------- */
+.work{padding-top:var(--section)}
+.work > .frame h2{margin-bottom:56px}
+.folders{position:relative}
+.folder{position:sticky;min-height:min(84svh,760px);padding:0 var(--margin) 64px}
+.folder:nth-child(1){top:0;background:var(--band-1)}
+.folder:nth-child(2){top:64px;background:var(--band-2)}
+.folder:nth-child(3){top:128px;background:var(--band-3)}
+.folder:nth-child(4){top:192px;background:var(--band-4)}
+.folder:nth-child(5){top:256px;background:var(--band-5)}
+.folder .strip{height:64px;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--gap);margin-bottom:40px}
+.tab{height:48px;min-width:260px;padding:0 36px;display:flex;align-items:center;background:var(--paper);color:var(--paper-ink);clip-path:polygon(0 100%,14px 0,calc(100% - 14px) 0,100% 100%);transform:translateY(1px)}
+.tab h3{font-size:var(--s-title)}
+.folder:nth-child(2) .tab{background:var(--paper-2)}
+.folder .cat{font-size:var(--s-small);color:var(--soft);padding-bottom:12px;text-align:right}
+.folder .body{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:start}
+.folder figure{grid-column:1 / span 7}
+.folder .copy{grid-column:9 / span 4;display:grid;gap:20px}
+.folder .copy p{max-width:44ch}
+.folder .stack{font-size:var(--s-small);color:var(--soft)}
+.folder figcaption{font-size:var(--s-small);color:var(--soft);margin-top:10px}
+.plate{aspect-ratio:16/10;background:var(--ground);overflow:hidden;position:relative}
+.plate > img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05)}
+@media (max-width:900px){
+  .folder{position:relative;top:auto !important;min-height:0;padding-bottom:48px}
+  .folder .strip{flex-wrap:wrap;align-items:flex-end;height:auto;padding-top:24px;margin-bottom:24px}
+  .tab{height:42px;min-width:0;padding:0 28px}
+  .folder .cat{padding-bottom:0;text-align:left;width:100%;order:-1}
+  .folder figure,.folder .copy{grid-column:1 / -1}
+  .folder .copy{margin-top:24px}
+  .plate{aspect-ratio:4/3}
+}
+
+/* interface fragments (data-ui keeps their own borders) */
+.ui{position:absolute;inset:6%;background:#f6f7f9;color:#141821;font-size:13.5px;line-height:1.35;display:flex;flex-direction:column}
+.ui header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #e3e6eb;font-weight:600} /* taste-skill-ignore: interface fragment */
+.ui header span{font-weight:400;color:#5a6270}
+.ui table{width:100%;border-collapse:collapse}
+.ui th,.ui td{text-align:left;padding:9px 16px;border-bottom:1px solid #e8ebef;white-space:nowrap}
+.ui th{color:#5a6270;font-weight:500;background:#fafbfc}
+.ui .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px}
+.ui .ok{background:#e3f4ea;color:#14663a}
+.ui .due{background:#fff3d6;color:#7a5200}
+.ui .late{background:#fde4e4;color:#8f1f1f}
+.ui-plate{position:absolute;right:5%;bottom:7%;width:56%;inset-block-start:auto;inset-inline-start:auto;height:auto}
+.road{flex:1;position:relative}
+.road svg{position:absolute;inset:0;width:100%;height:100%}
+.chat{flex:1;background:#e9e4dc;padding:14px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.msg{max-width:78%;padding:8px 11px;border-radius:8px;background:#fff}
+.msg.out{align-self:flex-end;background:#d8f6c6}
+.msg small{display:block;text-align:right;color:#5d6b5a;font-size:11.5px;margin-top:2px}
+.mem{padding:10px 16px;display:grid;gap:8px;flex:1}
+.mem div{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:8px 10px;background:#fff;border:1px solid #e3e6eb} /* taste-skill-ignore: interface fragment */
+.mem b{font-weight:600;color:#1a56b0}
+@media (max-width:560px){ .ui{font-size:12px} .ui th:nth-child(3),.ui td:nth-child(3){display:none} .ui-plate{width:78%} .plate .ui:not(.ui-plate) th:nth-child(2),.plate .ui:not(.ui-plate) td:nth-child(2){display:none} .plate .ui:not(.ui-plate) th:nth-child(3),.plate .ui:not(.ui-plate) td:nth-child(3){display:table-cell} }
+
+/* ---------- how I build: the request slip (live) ---------- */
+.build{padding-top:var(--section)}
+.build .grid{align-items:start}
+.build .intro{grid-column:1 / span 5;display:grid;gap:24px;position:sticky;top:48px}
+.build .intro p{max-width:40ch}
+.choose{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.path{background:var(--ground-2);padding:24px;display:grid;gap:8px;margin-top:16px}
+.path h3{font-size:var(--s-title)}
+.choose button{min-height:48px;padding:0 18px;background:var(--ground-2);color:var(--ink);border:0;font:500 var(--s-body)/1 var(--text);cursor:pointer;transition:background-color .18s, transform .18s var(--ease)}
+.choose button:hover{background:var(--band-3)}
+.choose button:active{transform:scale(.97)}
+.choose button[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+.slip-wrap{grid-column:7 / span 6;display:flex;justify-content:center;background:var(--ground-2);padding:64px var(--gap)}
+.slip{width:min(480px,100%);padding:32px 28px 52px}
+.slip h3{font:600 var(--s-title)/1.1 var(--display);margin-bottom:4px}
+.slip .sub{font-size:var(--s-small);color:var(--paper-soft)}
+.slip ol{list-style:none}
+.slip .grp{font-weight:600;margin-top:28px;margin-bottom:6px}
+.row{display:flex;align-items:baseline;gap:8px;padding:5px 0}
+.row .what{flex:0 1 auto}
+.row .dots{flex:1 1 24px;min-width:24px;border-bottom:4px dotted var(--paper-soft);transform:translateY(-4px)}
+.row .t{flex:0 0 auto;font-weight:500}
+.tk{width:14px;height:9px;vertical-align:baseline}.tk2{width:18px;height:9px;vertical-align:baseline}
+.row.read .t{background:var(--paper-ink);color:var(--gold);padding:0 6px}
+.row.new{animation:print .32s var(--ease) both}
+@keyframes print{from{opacity:0;transform:translateY(-8px)}}
+.total{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px;padding:8px 12px;margin-top:28px;background:var(--paper-ink);color:var(--paper);font-weight:600}
+.slip .again{margin-top:20px;width:100%}
+@media (max-width:900px){
+  .build .intro{grid-column:1 / -1;position:static}
+  .slip-wrap{grid-column:1 / -1;margin-top:40px;padding:32px 0;background:transparent}
+  .slip{padding:24px 18px 44px}
+}
+
+/* ---------- experience: cards folding into spines ---------- */
+.exp{padding-top:var(--section)}
+.exp-pin{height:300svh;position:relative}
+.exp-stage{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:center;gap:40px;overflow:hidden}
+.deck{position:relative;height:380px}
+.card{position:absolute;top:0;left:0;width:min(620px,78vw);height:100%;padding:32px;display:flex;flex-direction:column;gap:14px;will-change:transform;transition:transform .5s var(--ease)}
+.card:nth-child(5n+1){background:#1b2a44}
+.card:nth-child(5n+2){background:#21365a}
+.card:nth-child(5n+3){background:#28426d}
+.card:nth-child(5n+4){background:#2f4f82}
+.card:nth-child(5n+5){background:#365c96}
+.card h3{font-size:var(--s-title);line-height:1.1}
+.card .when{color:#c9d6ea}
+.card ul{padding-left:20px;display:grid;gap:6px;max-width:52ch}
+.card button.spine{position:absolute;inset:0;width:120px;background:transparent;border:0;cursor:pointer}
+.card button.spine:focus-visible{outline-offset:-4px}
+.exp-note{font-size:var(--s-body)}
+@media (max-width:900px), (prefers-reduced-motion:reduce){
+  .exp-pin{height:auto}
+  .exp-stage{position:static;height:auto;overflow:visible}
+  .deck{height:auto;display:grid;gap:12px}
+  .card{position:relative;width:100%;transform:none !important;height:auto;padding:24px}
+  .card button.spine{display:none}
+}
+
+/* ---------- about: a letter with a tear-off strip ---------- */
+.about{padding-top:var(--section);display:flex;justify-content:center}
+.letter{width:min(680px,100%);padding:60px 60px 72px;display:grid;gap:20px}
+.letter h2{font-size:var(--s-title)}
+.letter p{max-width:60ch}
+.letter mark{background:var(--gold);color:var(--paper-ink);padding:0 3px}
+.sign{margin-top:12px}
+.sign b{display:block;font:italic 600 var(--s-title)/1.1 var(--display)}
+.sign span{font-size:var(--s-small);color:var(--paper-soft)}
+.stub{width:min(680px,100%);min-height:76px;padding:16px 60px 26px;display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:5px dotted var(--ground);flex-wrap:wrap}
+.about-col{display:flex;flex-direction:column;width:min(680px,100%)}
+@media (max-width:760px){
+  .about{padding-inline:0}
+  .letter{padding:40px 24px 56px}
+  .stub{padding:16px 24px 28px;flex-direction:column;align-items:stretch}
+}
+
+/* ---------- contact: a card on the city ---------- */
+.contact{margin-top:var(--section);position:relative;min-height:100svh}
+.contact > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.55) contrast(1.05)}
+.visit{position:absolute;top:60px;right:var(--margin);width:400px;padding:32px 32px 0;display:grid;gap:16px}
+.visit h2{font-size:var(--s-head)}
+.visit dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px}
+.visit dd{text-align:right;font-weight:500}
+.visit .btn{margin:8px -32px 0;width:calc(100% + 64px);min-height:56px}
+.contact figcaption{position:absolute;left:var(--margin);bottom:24px;font-size:var(--s-small);color:var(--ink);background:var(--ground);padding:4px 8px}
+@media (max-width:760px){
+  .contact{min-height:0;padding-bottom:0}
+  .contact > img{position:relative;height:70svh}
+  .visit{position:relative;top:auto;right:auto;width:auto;margin:-80px var(--margin) 0}
+  .contact figcaption{top:16px;bottom:auto}
+}
+
+/* ---------- footer: the back of the card ---------- */
+footer{padding:var(--section) var(--margin) 48px}
+.back{max-width:1180px;margin:0 auto;padding:72px 56px 28px;display:grid;grid-template-columns:1fr 1fr;gap:40px 56px;position:relative}
+.back h2{font-size:var(--s-head);margin-bottom:16px}
+.back .addr{display:grid;gap:12px;align-content:start;padding-top:8px}
+.stamp{position:absolute;top:40px;right:56px;width:88px;padding:6px;background:var(--paper-2)}
+.stamp img{aspect-ratio:3/4;object-fit:cover;filter:grayscale(1)}
+.imprint{grid-column:1 / -1;text-align:center;font-size:var(--s-small);color:var(--paper-soft);padding-top:24px}
+.imprint a{color:inherit}
+.bigname{font:600 clamp(56px,13.5vw,210px)/.9 var(--display);letter-spacing:-.03em;text-align:center;margin-top:56px;white-space:nowrap}
+@media (max-width:760px){
+  footer{padding-inline:0}
+  .back{grid-template-columns:1fr;padding:64px 24px 24px}
+  .stamp{position:static;width:64px;justify-self:end;grid-row:1}
+}
+
+/* ---------- entrances ---------- */
+.js .rise{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--i,0) * 80ms)}
+.js .rise.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .js .rise{opacity:1;transform:none}
+  .hero > img{transform:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="tick1" viewBox="0 0 16 10"><path d="M1 5l3.5 3.5L11 1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol><symbol id="tick2" viewBox="0 0 20 10"><path d="M1 5l3.5 3.5L11 1.5M8 8.5L15 1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol></svg>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <a class="mark" href="#top" aria-label="Abhinav Goyal, home">AG</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#build">How I build</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a class="btn" href="mailto:abhinavgoyal9729@gmail.com?subject=Hello%20Abhinav">Email me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top">
+  <img src="assets/view-of-ludhiana-urban-at-evening.jpg" width="1920" height="1440" alt="Rooftops of Ludhiana at dusk, water tanks and a gurdwara dome against the sky" fetchpriority="high">
+  <article class="receipt paper zig">
+    <h1><span>Abhinav</span> <span>Goyal</span></h1>
+    <div class="facts">
+      <ul>
+        <li>Python &amp; GenAI backend engineer</li>
+        <li>Ludhiana, Punjab</li>
+        <li>Cybrik Solutions · Founder of Planorah</li>
+      </ul>
+      <p>I build what runs behind the payment, the phone call and the WhatsApp message.</p>
+    </div>
+    <div class="foot">
+      <span class="meta">Flexo runs 20+ gyms across India</span>
+      <a class="btn" href="mailto:abhinavgoyal9729@gmail.com?subject=A%20backend%20to%20build">Email me</a>
+      <a class="link right" href="#resume">Résumé (PDF)</a>
+    </div>
+  </article>
+</section>
+
+<!-- WORK -->
+<section class="work" id="work" aria-labelledby="work-h">
+  <div class="frame"><h2 class="head rise" id="work-h">Selected work</h2></div>
+  <div class="folders">
+
+    <article class="folder" id="flexo">
+      <div class="strip"><div class="tab"><h3>Flexo</h3></div><p class="cat">Gym SaaS · 20+ paying gyms</p></div>
+      <div class="body">
+        <figure class="rise">
+          <div class="plate" data-ui>
+            <div class="ui">
+              <header>Iron Temple Fitness · Renewals <span>Today</span></header>
+              <table>
+                <thead><tr><th>Member</th><th>Plan</th><th>Expires</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Harpreet Kaur</td><td>Quarterly · ₹3,999</td><td>21 Oct</td><td><span class="pill ok">Paid · read</span></td></tr>
+                  <tr><td>Rohit Sharma</td><td>Monthly · ₹1,499</td><td>22 Oct</td><td><span class="pill due">Reminder sent</span></td></tr>
+                  <tr><td>Simran Gill</td><td>Annual · ₹12,000</td><td>24 Oct</td><td><span class="pill due">Reminder sent</span></td></tr>
+                  <tr><td>Aman Verma</td><td>Monthly · ₹1,499</td><td>18 Oct</td><td><span class="pill late">Lapsed 3 days</span></td></tr>
+                  <tr><td>Navjot Singh</td><td>Half-yearly · ₹6,999</td><td>02 Nov</td><td><span class="pill ok">Active</span></td></tr>
+                  <tr><td>Priya Arora</td><td>Monthly · ₹1,499</td><td>03 Nov</td><td><span class="pill ok">Active</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <figcaption>Renewals view for one gym. Sample members.</figcaption>
+        </figure>
+        <div class="copy">
+          <p class="rise" style="--i:1">A multi-tenant SaaS that runs members, plans, attendance and renewals for 20+ paying gyms across India. Every query is scoped to its gym. Renewal reminders go out on WhatsApp, payments come in through Razorpay and bind to the member's record. I own it end to end: schema, build, deploy and production support.</p>
+          <p class="stack rise" style="--i:2">Next.js · Supabase Postgres · Prisma · Razorpay · Meta WhatsApp Business API</p>
+          <a class="link rise" style="--i:3" href="#flexo">Read the Flexo case study</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="folder" id="planorah">
+      <div class="strip"><div class="tab"><h3>Planorah</h3></div><p class="cat">My company · AI learning roadmaps</p></div>
+      <div class="body">
+        <figure class="rise">
+          <div class="plate" data-ui>
+            <div class="ui">
+              <header>Your roadmap · Backend with Django <span>12 weeks · 6 h a week</span></header>
+              <div class="road">
+                <svg viewBox="0 0 600 300" role="img" aria-label="A roadmap of five connected stages, the first two complete">
+                  <g fill="none" stroke="#9aa6b8" stroke-width="3">
+                    <path d="M70 230 C140 230 140 110 210 110"/><path d="M210 110 C280 110 280 210 350 210"/><path d="M350 210 C420 210 420 90 490 90"/><path d="M350 210 C420 210 420 250 520 250"/>
+                  </g>
+                  <g font-family="Outfit, sans-serif" font-size="14">
+                    <rect x="20" y="208" width="120" height="44" fill="#1a56b0"/><text x="80" y="235" fill="#fff" text-anchor="middle">Python basics</text>
+                    <rect x="150" y="88" width="120" height="44" fill="#1a56b0"/><text x="210" y="115" fill="#fff" text-anchor="middle">SQL &amp; Postgres</text>
+                    <rect x="290" y="188" width="120" height="44" fill="#fff" stroke="#1a56b0" stroke-width="3"/><text x="350" y="215" fill="#141821" text-anchor="middle">Django ORM</text>
+                    <rect x="430" y="68" width="120" height="44" fill="#e8ebef"/><text x="490" y="95" fill="#141821" text-anchor="middle">REST APIs</text>
+                    <rect x="460" y="228" width="120" height="44" fill="#e8ebef"/><text x="520" y="255" fill="#141821" text-anchor="middle">Celery jobs</text>
+                    <text x="350" y="172" fill="#5a6270" text-anchor="middle">You are here · week 5</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <figcaption>A generated roadmap. Sample learner.</figcaption>
+        </figure>
+        <div class="copy">
+          <p class="rise" style="--i:1">An AI learning-roadmap platform I founded and build alone. A Django monolith takes a learner's goal, Gemini 2.5 Flash drafts a structured plan, and a behavioural engine reshapes it around how that learner actually studies. Celery runs the slow work and a FastAPI service handles generation. Plans cost ₹0, ₹99, ₹249 or ₹499.</p>
+          <p class="stack rise" style="--i:2">Django · Postgres · Gemini 2.5 Flash · Celery · FastAPI · Razorpay · Nginx/Gunicorn</p>
+          <a class="link rise" style="--i:3" href="#planorah">Read the Planorah case study</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="folder" id="crm">
+      <div class="strip"><div class="tab"><h3>Voice CRM</h3></div><p class="cat">White-label B2B · Calls and WhatsApp</p></div>
+      <div class="body">
+        <figure class="rise">
+          <div class="plate">
+            <img src="assets/army-switchboard-operators.jpg" width="1920" height="1234" alt="Two telephone operators at a desk taking calls in front of a long switchboard, 1940s" loading="lazy" decoding="async">
+            <div class="ui ui-plate" data-ui>
+              <header>Call log <span>Auto-dialler</span></header>
+              <table>
+                <thead><tr><th>Lead</th><th>Outcome</th><th>Follow-up</th></tr></thead>
+                <tbody>
+                  <tr><td>Gurpreet S.</td><td>Interested, call back Fri</td><td>WhatsApp <svg class="tk2" aria-label="read"><use href="#tick2"/></svg></td></tr>
+                  <tr><td>Meena R.</td><td>Asked for price list</td><td>WhatsApp <svg class="tk" aria-label="delivered"><use href="#tick1"/></svg></td></tr>
+                  <tr><td>Kunal D.</td><td>No answer, retry 6 pm</td><td>Queued</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <figcaption>Switchboard operators, 1940s, the job the dialler now does. Call log with sample leads.</figcaption>
+        </figure>
+        <div class="copy">
+          <p class="rise" style="--i:1">A white-label CRM where a new lead gets a phone call, not a spreadsheet row. Tata Smartflo places the call, an ElevenLabs voice holds the conversation, the transcript is summarised back onto the lead, and a WhatsApp follow-up goes out through Meta's API. Nobody dials.</p>
+          <p class="stack rise" style="--i:2">Python · Tata Smartflo · ElevenLabs · Meta WhatsApp Business API · Postgres</p>
+          <a class="link rise" style="--i:3" href="#crm">Read the CRM case study</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="folder" id="cybrik">
+      <div class="strip"><div class="tab"><h3>Cybrik</h3></div><p class="cat">Day job · Voice agents on WhatsApp</p></div>
+      <div class="body">
+        <figure class="rise">
+          <div class="plate" data-ui>
+            <div class="ui">
+              <header>Visa desk assistant <span>WhatsApp</span></header>
+              <div class="chat">
+                <div class="msg">Hi, my student visa file was submitted last week. What happens next?<small>10:42</small></div>
+                <div class="msg out">Thanks, Ravneet. Next is biometrics. I can book a slot: Tuesday 11:00 or Thursday 15:30?<small>10:42 <svg class="tk2" aria-label="read"><use href="#tick2"/></svg></small></div>
+                <div class="msg">Thursday please<small>10:43</small></div>
+                <div class="msg out">Booked for Thursday 15:30. I've sent the document checklist as a voice note too.<small>10:43 <svg class="tk2" aria-label="read"><use href="#tick2"/></svg></small></div>
+              </div>
+            </div>
+          </div>
+          <figcaption>An agent conversation. Sample client.</figcaption>
+        </figure>
+        <div class="copy">
+          <p class="rise" style="--i:1">At Cybrik Solutions I build AI voice agents that answer on WhatsApp for an immigration-services client: documents, visa stages and appointments, handled in conversation and handed to a person when it matters. The services run on Django and Flask with LLMs through AWS Bedrock.</p>
+          <p class="stack rise" style="--i:2">Django · Flask · AWS Bedrock · WhatsApp · Postgres</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="folder" id="memory">
+      <div class="strip"><div class="tab"><h3>Agent memory</h3></div><p class="cat">Research · Embeddings and vector search</p></div>
+      <div class="body">
+        <figure class="rise">
+          <div class="plate" data-ui>
+            <div class="ui">
+              <header>recall("why did checkout break?") <span>4 matches</span></header>
+              <div class="mem">
+                <div><b>Decision</b><span>Moved payment verification into the webhook handler</span></div>
+                <div><b>Change</b><span>payments/views.py: removed client-side confirm</span></div>
+                <div><b>Error</b><span>400 on signature check after key rotation</span></div>
+                <div><b>Deploy</b><span>Rolled back release 41, restored old secret</span></div>
+              </div>
+            </div>
+          </div>
+          <figcaption>A recall query over stored session events. Sample events.</figcaption>
+        </figure>
+        <div class="copy">
+          <p class="rise" style="--i:1">A persistent memory layer for coding agents. It stores decisions, code changes, errors and deploy events so an agent's context survives across sessions, and lets you ask why something regressed.</p>
+          <p class="stack rise" style="--i:2">Python · Embeddings · Vector databases · LLM agents</p>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- HOW I BUILD (live) -->
+<section class="build frame" id="build" aria-labelledby="build-h">
+  <div class="grid">
+    <div class="intro">
+      <h2 class="head rise" id="build-h">Follow one request</h2>
+      <p class="rise" style="--i:1">Pick a system and watch one request print, stage by stage, the way it moves through the real architecture. Timings are representative, not live.</p>
+      <div class="choose rise" style="--i:2" role="group" aria-label="Choose a request to trace">
+        <button type="button" data-run="flexo" aria-pressed="true">Gym renewal</button>
+        <button type="button" data-run="planorah" aria-pressed="false">New roadmap</button>
+        <button type="button" data-run="crm" aria-pressed="false">Lead call</button>
+      </div>
+      <div class="path rise" style="--i:3">
+        <h3>The path it takes</h3>
+        <p id="slip-path">Razorpay checkout, webhook into a Next.js route on Vercel, Prisma into Supabase Postgres, Meta WhatsApp Cloud API back to the member.</p>
+      </div>
+    </div>
+    <div class="slip-wrap">
+      <div class="slip paper zig" aria-live="polite">
+        <h3 id="slip-title">Flexo · Gym renewal</h3>
+        <p class="sub" id="slip-sub">Member renews a monthly plan from a WhatsApp link</p>
+        <ol id="slip-rows">
+          <li class="grp">On the member's phone</li>
+          <li class="row"><span class="what">Pays ₹1,499 in Razorpay checkout</span><span class="dots"></span><span class="t">0.0 s</span></li>
+          <li class="grp">On the server</li>
+          <li class="row"><span class="what">Webhook signature verified</span><span class="dots"></span><span class="t">0.4 s</span></li>
+          <li class="row"><span class="what">Gym resolved, query scoped to it</span><span class="dots"></span><span class="t">0.4 s</span></li>
+          <li class="row"><span class="what">Membership extended in one transaction</span><span class="dots"></span><span class="t">0.5 s</span></li>
+          <li class="grp">Back on the phone</li>
+          <li class="row"><span class="what">Receipt sent as WhatsApp template</span><span class="dots"></span><span class="t">0.9 s</span></li>
+          <li class="row"><span class="what">Delivered</span><span class="dots"></span><span class="t">1.6 s <svg class="tk" aria-label="delivered"><use href="#tick1"/></svg></span></li>
+          <li class="row read"><span class="what">Read by the member</span><span class="dots"></span><span class="t">2.1 s <svg class="tk2" aria-label="read"><use href="#tick2"/></svg></span></li>
+        </ol>
+        <div class="total" id="slip-total"><span>Renewed, receipted, read</span><span>2.1 s</span></div>
+        <button type="button" class="btn again" id="replay">Print it again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="exp" id="experience" aria-labelledby="exp-h">
+  <div class="exp-pin">
+    <div class="exp-stage frame">
+      <h2 class="head" id="exp-h">Where I've worked</h2>
+      <div class="deck" id="deck">
+        <article class="card"><h3>Cybrik Solutions</h3><p class="when">Software Developer · Nov 2025 to now</p>
+          <ul><li>AI backend services in Django and Flask on AWS Bedrock, for internal and client teams.</li><li>REST APIs for AI and automation workflows, owned from design to production support.</li><li>Cut API latency by profiling slow endpoints and rewriting SQL.</li></ul>
+          <button class="spine" type="button" aria-label="Show Cybrik Solutions" tabindex="-1"></button></article>
+        <article class="card"><h3>Planorah</h3><p class="when">Founder &amp; engineer · Jul 2025 to now</p>
+          <ul><li>Sole engineer: Django and Postgres backend, APIs, auth, progress tracking, frontend.</li><li>Moving single-shot generation to retrieval over a vector store.</li><li>Runs its own Linux, Nginx and Gunicorn production.</li></ul>
+          <button class="spine" type="button" aria-label="Show Planorah" tabindex="-1"></button></article>
+        <article class="card"><h3>NexBuild Labs</h3><p class="when">Owner · Web and SEO agency</p>
+          <ul><li>Websites and search work for local businesses.</li><li>Client systems like Sangam ERP and Hindustan LED Boards' CRM.</li></ul>
+          <button class="spine" type="button" aria-label="Show NexBuild Labs" tabindex="-1"></button></article>
+        <article class="card"><h3>Corediva Inc.</h3><p class="when">Python Developer Intern · Jul to Sep 2025</p>
+          <ul><li>Flask backends with SQL and authentication.</li><li>Email-marketing and billing modules that replaced a manual workflow.</li></ul>
+          <button class="spine" type="button" aria-label="Show Corediva Inc." tabindex="-1"></button></article>
+        <article class="card"><h3>Study</h3><p class="when">MCA, Amity University · expected 2027</p>
+          <ul><li>BCA, Panjab University, 2025.</li><li>Certificate in AI &amp; Machine Learning, IIT Hyderabad, 2026.</li><li>English, Hindi and Punjabi.</li></ul>
+          <button class="spine" type="button" aria-label="Show Study" tabindex="-1"></button></article>
+      </div>
+      <p class="exp-note">Five entries. The full history is in the <a class="link" href="#resume">résumé (PDF)</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about frame" id="about" aria-labelledby="about-h">
+  <div class="about-col">
+    <article class="letter paper rise">
+      <h2 id="about-h">Why backends</h2>
+      <p>I'm Abhinav, a backend engineer in Ludhiana. Most of what I build sits behind a payment, a phone call or a WhatsApp message, the three things small Indian businesses actually run on.</p>
+      <p>Flexo is the clearest example. It runs members, plans, attendance and renewals for more than twenty gyms, and I own every part of it, from the Postgres schema to production support.</p>
+      <p>By day I'm at Cybrik Solutions, building GenAI services on AWS Bedrock. Alongside it I'm building Planorah and finishing my MCA.</p>
+      <p>What I care about is the unglamorous part done properly: <mark>tenant data that never leaks</mark>, webhooks that are verified, retries that never charge anyone twice.</p>
+      <div class="sign"><b>Abhinav Goyal</b><span>Python &amp; GenAI backend engineer</span></div>
+    </article>
+    <div class="stub paper">
+      <span>abhinavgoyal9729@gmail.com</span>
+      <a class="btn" href="mailto:abhinavgoyal9729@gmail.com?subject=A%20backend%20to%20build">Write to me</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact" aria-labelledby="contact-h">
+  <img src="assets/ludhiana-skyline.jpg" width="1920" height="1315" alt="Ludhiana's rooftops under a wide sky, seen from a hospital roof" loading="lazy" decoding="async">
+  <div class="visit paper">
+    <h2 id="contact-h">Say hello</h2>
+    <p>Ludhiana, Punjab, India<br>IST, UTC+5:30</p>
+    <dl>
+      <dt>Open to</dt><dd>Backend &amp; GenAI roles</dd>
+      <dt>Freelance</dt><dd>Through NexBuild Labs</dd>
+      <dt>Replies</dt><dd>Within a day</dd>
+    </dl>
+    <p><a class="link" href="https://github.com/Abhinav6284">GitHub</a> · <a class="link" href="https://linkedin.com/in/abhinav-goyal">LinkedIn</a></p>
+    <a class="btn" href="mailto:abhinavgoyal9729@gmail.com?subject=Hello%20Abhinav">Email abhinavgoyal9729@gmail.com</a>
+  </div>
+  <figcaption>Ludhiana from Christian Medical College</figcaption>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="back paper scallop">
+    <div>
+      <h2>Thanks for reading</h2>
+      <p>If you have a system that has to take money, place calls or send messages without anyone watching it, I'd like to hear about it.</p>
+    </div>
+    <div class="addr">
+      <a class="link" href="mailto:abhinavgoyal9729@gmail.com">abhinavgoyal9729@gmail.com</a>
+      <a class="link" href="https://github.com/Abhinav6284">github.com/Abhinav6284</a>
+      <a class="link" href="https://linkedin.com/in/abhinav-goyal">linkedin.com/in/abhinav-goyal</a>
+      <a class="link" href="#resume" id="resume">Résumé (PDF)</a>
+    </div>
+    <div class="stamp"><img src="assets/clock-tower-ludhiana.jpg" width="1920" height="2560" alt="Ludhiana's clock tower" loading="lazy" decoding="async"></div>
+    <p class="imprint">© 2026 Abhinav Goyal, Ludhiana. Photographs: “View of Ludhiana Urban at evening”, Wikimedia Commons, CC0; <a href="https://commons.wikimedia.org/wiki/File:Ludhiana_skyline.jpg">“Ludhiana skyline”</a> by Benison P Baby, CC BY-SA 4.0; <a href="https://commons.wikimedia.org/wiki/File:Clock_tower_Ludhiana.jpeg">“Clock tower Ludhiana”</a> by Deepu.dhaipai, CC BY-SA 4.0; “Army Switchboard Operators”, US Army Signal Corps, public domain. All shown in greyscale.</p>
+  </div>
+  <p class="bigname" aria-hidden="true">Abhinav Goyal</p>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* shaped paper edges */
+function zig(el){
+  const n = Math.max(12, Math.round(el.offsetWidth / 22)), d = 12, pts = ['0 0','100% 0'];
+  for (let i = n; i >= 0; i--) pts.push(`${(i / n * 100).toFixed(2)}% calc(100% - ${i % 2 ? 0 : d}px)`);
+  el.style.clipPath = `polygon(${pts.join(',')})`;
+}
+function scallop(el){
+  const n = el.offsetWidth < 700 ? 6 : 12, r = 18, pts = [];
+  for (let i = 0; i < n; i++) for (let k = 0; k <= 8; k++) {
+    const a = Math.PI - (k / 8) * Math.PI, x = (i + .5 + Math.cos(a) / 2) / n * 100;
+    pts.push(`${x.toFixed(2)}% ${(r - Math.sin(a) * r).toFixed(1)}px`);
+  }
+  el.style.clipPath = `polygon(${pts.join(',')},100% 100%,0 100%)`;
+}
+function shape(){ document.querySelectorAll('.zig').forEach(zig); document.querySelectorAll('.scallop').forEach(scallop); }
+shape(); addEventListener('resize', shape);
+
+/* entrances */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
+document.querySelectorAll('.rise').forEach(el => io.observe(el));
+
+/* the request slip */
+const traces = {
+  flexo: { path: 'Razorpay checkout, webhook into a Next.js route on Vercel, Prisma into Supabase Postgres, Meta WhatsApp Cloud API back to the member.', title: 'Flexo · Gym renewal', sub: "Member renews a monthly plan from a WhatsApp link", total: ['Renewed, receipted, read', '2.1 s'], rows: [
+    ['g', "On the member's phone"], ['Pays ₹1,499 in Razorpay checkout', '0.0 s'],
+    ['g', 'On the server'], ['Webhook signature verified', '0.4 s'], ['Gym resolved, query scoped to it', '0.4 s'], ['Membership extended in one transaction', '0.5 s'],
+    ['g', 'Back on the phone'], ['Receipt sent as WhatsApp template', '0.9 s'], ['Delivered', '1.6 s', 'tick1'], ['Read by the member', '2.1 s', 'read'] ] },
+  planorah: { path: 'Django view, Celery queue, a FastAPI service calling Gemini 2.5 Flash, schema validation, the behavioural engine, Postgres.', title: 'Planorah · New roadmap', sub: 'Learner asks for a 12-week backend plan at 6 hours a week', total: ['Roadmap ready, 12 weeks', '7.8 s'], rows: [
+    ['g', 'In Django'], ['Goal and hours validated', '0.1 s'], ['Past study sessions loaded', '0.2 s'], ['Generation job queued on Celery', '0.3 s'],
+    ['g', 'In the FastAPI service'], ['Gemini 2.5 Flash drafts the plan', '6.4 s'], ['JSON checked against the schema', '6.5 s'],
+    ['g', 'Back in Django'], ['Behavioural engine reorders by streaks', '7.1 s'], ['Roadmap saved to Postgres', '7.3 s'], ['Learner sees week one', '7.8 s', 'read'] ] },
+  crm: { path: 'CRM queue, Tata Smartflo telephony, ElevenLabs voice, transcript summarised by an LLM, Meta WhatsApp Cloud API.', title: 'Voice CRM · Lead call', sub: 'A new lead arrives from a web form', total: ['Called, summarised, followed up', '2 min 46 s'], rows: [
+    ['g', 'In the CRM'], ['Lead saved, call queued', '0 s'],
+    ['g', 'On the phone line'], ['Tata Smartflo dials the lead', '4 s'], ['ElevenLabs voice greets by name', '11 s'], ['Conversation, intent captured', '2 min 31 s'],
+    ['g', 'After the call'], ['Transcript summarised onto the lead', '2 min 38 s'], ['WhatsApp follow-up sent', '2 min 40 s'], ['Read by the lead', '2 min 46 s', 'read'] ] }
+};
+const rowsEl = document.getElementById('slip-rows'), totalEl = document.getElementById('slip-total');
+let current = 'flexo', timer;
+const TICK1 = '<svg class="tk" aria-label="delivered"><use href="#tick1"/></svg>';
+const TICK2 = '<svg class="tk2" aria-label="read"><use href="#tick2"/></svg>';
+function run(key){
+  current = key; clearTimeout(timer);
+  const t = traces[key];
+  document.getElementById('slip-title').textContent = t.title;
+  document.getElementById('slip-sub').textContent = t.sub;
+  document.getElementById('slip-path').textContent = t.path;
+  document.querySelectorAll('[data-run]').forEach(b => b.setAttribute('aria-pressed', b.dataset.run === key));
+  rowsEl.innerHTML = ''; totalEl.style.visibility = 'hidden';
+  let i = 0;
+  const step = () => {
+    if (i >= t.rows.length) { totalEl.innerHTML = `<span>${t.total[0]}</span><span>${t.total[1]}</span>`; totalEl.style.visibility = 'visible'; zig(rowsEl.closest('.zig')); return; }
+    const [a, b, c] = t.rows[i++], li = document.createElement('li');
+    if (a === 'g') { li.className = 'grp'; li.textContent = b; }
+    else { li.className = 'row new' + (c ? ' ' + c : ''); li.innerHTML = `<span class="what"></span><span class="dots"></span><span class="t"></span>`; li.children[0].textContent = a; li.children[2].textContent = b + ' ';
+      if (c === 'tick1') li.children[2].insertAdjacentHTML('beforeend', TICK1);
+      if (c === 'read' && key !== 'planorah') li.children[2].insertAdjacentHTML('beforeend', TICK2); }
+    rowsEl.appendChild(li);
+    reduce ? step() : (timer = setTimeout(step, a === 'g' ? 120 : 340));
+  };
+  step();
+}
+document.querySelectorAll('[data-run]').forEach(b => b.addEventListener('click', () => run(b.dataset.run)));
+document.getElementById('replay').addEventListener('click', () => run(current));
+const slipIO = new IntersectionObserver(es => { if (es[0].isIntersecting) { run('flexo'); slipIO.disconnect(); } }, { threshold: .4 });
+slipIO.observe(document.querySelector('.slip'));
+
+/* experience: cards fold into spines */
+const pin = document.querySelector('.exp-pin'), cards = [...document.querySelectorAll('.card')];
+const deckMode = () => matchMedia('(min-width: 901px)').matches && !reduce;
+let active = 0;
+function layout(){
+  if (!deckMode()) { cards.forEach(c => { c.style.transform = ''; c.style.zIndex = ''; }); return; }
+  const w = cards[0].offsetWidth, spine = 120;
+  cards.forEach((c, i) => {
+    const x = i <= active ? i * spine : active * spine + w + 24 + (i - active - 1) * (w + 24);
+    c.style.transform = `translateX(${x}px)`; c.style.zIndex = i;
+    c.querySelector('.spine').tabIndex = i < active ? 0 : -1;
+  });
+}
+function onScroll(){
+  if (!deckMode()) return;
+  const r = pin.getBoundingClientRect(), span = pin.offsetHeight - innerHeight;
+  const p = Math.min(1, Math.max(0, -r.top / span));
+  const next = Math.min(cards.length - 1, Math.floor(p * cards.length));
+  if (next !== active) { active = next; layout(); }
+}
+cards.forEach((c, i) => c.querySelector('.spine').addEventListener('click', () => {
+  const span = pin.offsetHeight - innerHeight;
+  scrollTo({ top: pin.offsetTop + span * (i + .5) / cards.length, behavior: reduce ? 'auto' : 'smooth' });
+}));
+addEventListener('scroll', onScroll, { passive: true });
+addEventListener('resize', () => { layout(); onScroll(); });
+layout(); onScroll();
+</script>
+</body>
+</html>
