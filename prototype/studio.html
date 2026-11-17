@@ -8,6 +8,8 @@
 <meta name="color-scheme" content="dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -74,13 +76,15 @@ h3{font-size:var(--s-title);letter-spacing:-.02em}
 
 /* ---------- hero ---------- */
 .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;padding-top:24px}
-.hero-main{position:relative;background:var(--s1);border-radius:28px;padding:56px;min-height:620px;display:grid;grid-template-columns:1fr minmax(180px,36%);gap:24px;overflow:hidden}
-.hero-main h1{font-size:var(--s-display);font-weight:800;letter-spacing:-.045em;line-height:.9;align-self:end;position:relative;z-index:2}
+.hero-main{position:relative;background:var(--s1);border-radius:28px;padding:400px 56px 56px;min-height:760px;display:grid;grid-template-columns:1fr;align-content:end;gap:24px;overflow:hidden}
+.hero-main h1{font-size:var(--s-display);font-weight:800;letter-spacing:-.045em;line-height:.9;position:relative;z-index:2}
 .hero-main h1 span{display:block}
 .hero-main h1 em{font-style:normal;color:var(--gold)}
-.portrait{position:relative;border-radius:var(--r);background:var(--s3);display:grid;place-items:center;text-align:center;padding:24px;color:var(--soft);font-size:var(--s-small);align-self:stretch}
-.portrait b{display:block;color:var(--ink);font-size:var(--s-body);margin-bottom:6px}
-.hero-meta{grid-column:1 / -1;display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
+/* the desk scene fills the card behind the words; it sits up and to the right, clear of the name */
+.hero-3d{position:absolute;inset:0;z-index:0}
+.toy-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.toys .shot .tilt{opacity:0}
+.hero-meta{position:relative;z-index:1;grid-column:1 / -1;display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
 .hero-meta p{max-width:34ch;font-size:19px}
 .status{display:inline-flex;align-items:center;gap:10px;color:var(--soft)}
 .status i{position:relative;width:10px;height:10px;border-radius:50%;background:var(--mint)}
@@ -97,23 +101,15 @@ h3{font-size:var(--s-title);letter-spacing:-.02em}
 .stack-tile h3{width:100%;font-size:var(--s-body);font-weight:600;margin-bottom:6px}
 @media (max-width:1080px){ .hero{grid-template-columns:1fr} }
 @media (max-width:640px){
-  .hero-main{grid-template-columns:1fr;padding:28px 20px;min-height:0}
-  .portrait{min-height:300px;order:-1}
+  .hero-main{padding:min(96vw,380px) 20px 28px;min-height:0}
   .tile{padding:24px 20px}
 }
 
 /* ---------- the AG building: a guided tour ---------- */
 .tour{position:relative;margin-top:140px}
 .tour-stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#172246}
-.tour-stage .far{position:absolute;inset:-10%;width:120%;height:120%;opacity:.55;will-change:transform}
-/* drawn at twice the stage size and scaled by the camera, so zoomed rooms stay crisp on the GPU */
-.tour-stage .near{position:absolute;left:0;top:0;width:200%;height:200%;transform-origin:0 0;transform:scale(.5);will-change:transform}
-.paused .person,.paused .led{animation-play-state:paused}
-.room{transition:opacity .6s var(--ease)}
-.dim .room:not(.on){opacity:.32}
-.person{animation:bob 2.4s ease-in-out infinite}
-.person:nth-of-type(2n){animation-delay:-1.2s}
-@keyframes bob{50%{transform:translateY(-3px)}}
+.tour-stage canvas,.roomview canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;outline:none}
+.tour-stage canvas.hover{cursor:pointer}
 .hint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);padding:10px 18px;border-radius:99px;background:var(--ground);color:var(--soft);font-size:var(--s-small);transition:opacity .4s}
 .steps{position:relative;z-index:2;margin-top:-100svh}
 .steps{pointer-events:none}
@@ -137,11 +133,6 @@ h3{font-size:var(--s-title);letter-spacing:-.02em}
 .stop .chips{display:flex;flex-wrap:wrap;gap:8px}
 .stop .row{display:flex;gap:10px;flex-wrap:wrap}
 
-/* rooms you can click */
-.near .room{cursor:pointer}
-.near .room:hover{transform:translateY(-4px)}
-.near .room{transition:opacity .6s var(--ease),transform .5s var(--ease)}
-.beacon{transition:fill .6s}
 .meter{display:flex;align-items:center;gap:14px}
 .meter .bar{flex:1;height:8px;border-radius:9px;background:var(--s3);overflow:hidden}
 .meter .bar i{display:block;height:100%;background:var(--gold);transform-origin:left;transform:scaleX(0);transition:transform .8s var(--ease)}
@@ -154,17 +145,9 @@ dialog.roomview[open]{animation:open .9s var(--ease) both}
 dialog.roomview.closing{animation:shut .5s var(--ease) both}
 @keyframes open{from{opacity:0;transform:scale(1.04)}}
 @keyframes shut{to{opacity:0;transform:scale(1.03)}}
-.roomview svg{position:absolute;inset:0;width:100%;height:100%}
-.drop{animation:drop .8s cubic-bezier(.22,.8,.3,1) both}
-@keyframes drop{from{opacity:0;transform:translateY(-28px)}}
-.led{animation:blink 1.6s steps(2) infinite}
-@keyframes blink{50%{opacity:.25}}
-.glow{opacity:0;transition:opacity 1.2s var(--ease)}
-.glow.on{opacity:.26}
-.floorflash{animation:flash 1s var(--ease)}
-@keyframes flash{30%{opacity:.35}}
-.tagline{opacity:0;transition:opacity .5s var(--ease)}
-.tagline.on{opacity:1}
+.blips{position:absolute;inset:0;pointer-events:none;z-index:1}
+.blip{position:absolute;left:0;top:0;padding:6px 12px;border-radius:99px;background:#fff;color:#141826;font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .4s var(--out)}
+.blip.on{opacity:1}
 .console{position:absolute;top:24px;right:24px;bottom:24px;width:min(440px,calc(100% - 48px));background:var(--ground);border-radius:28px;padding:30px;display:flex;flex-direction:column;gap:16px;overflow:auto;animation:slide .9s .25s var(--ease) both}
 @keyframes slide{from{opacity:0;transform:translateX(40px)}}
 .console h2{font-size:clamp(28px,2.4vw,38px)}
@@ -308,7 +291,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
   <section class="hero" id="top">
     <div class="hero-main rise">
       <h1><span>Abhinav</span><span>Goyal<em>.</em></span></h1>
-      <div class="portrait" role="img" aria-label="Portrait placeholder"><div><b>Your photo here</b>Cut-out PNG, 4:5, plain background</div></div>
+      <div class="hero-3d" data-toy="hero" role="img" aria-label="A toy Abhinav beside a desk whose laptop runs a payment webhook, with a server rack behind, while a rupee coin, a phone and a WhatsApp bubble circle the desk sending packets to it."></div>
       <div class="hero-meta">
         <p>Backend &amp; GenAI engineer in Ludhiana, Punjab. I build what runs behind payments, phone calls and WhatsApp.</p>
         <span class="status"><i></i>Open to backend and GenAI roles</span>
@@ -335,9 +318,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
 </div>
 <section class="tour" id="systems" aria-labelledby="systems-h">
   <div class="tour-stage" id="stage">
-    <svg class="far" id="far" viewBox="0 0 1000 700" aria-hidden="true"></svg>
-    <svg class="near" id="iso" viewBox="90 30 820 660" preserveAspectRatio="xMidYMid meet" role="img" aria-label="An isometric building topped by the letters AG. A server room in the middle is connected by pipes to four rooms: a gym, a study, a call centre and a visa desk. Requests travel the pipes as small packets."></svg>
-    <p class="hint" id="hint">Scroll to walk through the building</p>
+    <p class="hint" id="hint">Scroll to walk through · tap a room to step inside</p>
   </div>
   <div class="steps">
     <div class="step" data-room="all">
@@ -365,7 +346,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
 </section>
 
 <dialog class="roomview" id="roomview" aria-labelledby="rv-title">
-  <svg id="rv-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+  <div class="blips" id="rv-blips" aria-hidden="true"></div>
   <button class="btn ghost close" type="button" id="rv-close">Back to the building</button>
   <div class="console">
     <h2 id="rv-title"></h2>
@@ -399,7 +380,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
     </div>
     <div class="projects">
       <a class="project wide rise" href="#flexo">
-        <div class="shot c-blue">
+        <div class="shot c-blue" data-toy="flexo">
           <div class="ui tilt" data-ui>
             <header>Iron Temple Fitness · Renewals <span>Today</span></header>
             <table>
@@ -422,7 +403,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
       </a>
 
       <a class="project rise" href="#planorah">
-        <div class="shot c-gold">
+        <div class="shot c-gold" data-toy="planorah">
           <div class="ui tilt" data-ui>
             <header>Backend with Django <span>12 weeks</span></header>
             <svg viewBox="0 0 520 220" role="img" aria-label="A roadmap of five stages, two complete">
@@ -444,7 +425,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
       </a>
 
       <a class="project rise" style="--i:1" href="#crm">
-        <div class="shot c-coral">
+        <div class="shot c-coral" data-toy="crm">
           <div class="ui tilt" data-ui>
             <header>Call log <span>Auto-dialler</span></header>
             <table>
@@ -465,7 +446,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
       </a>
 
       <a class="project rise" href="#cybrik">
-        <div class="shot c-mint">
+        <div class="shot c-mint" data-toy="cybrik">
           <div class="ui tilt" data-ui>
             <header>Visa desk assistant <span>WhatsApp</span></header>
             <div class="chat">
@@ -483,7 +464,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
       </a>
 
       <a class="project rise" style="--i:1" href="#memory">
-        <div class="shot c-ink">
+        <div class="shot c-ink" data-toy="memory">
           <div class="ui tilt" data-ui>
             <header>recall("why did checkout break?") <span>4 matches</span></header>
             <table><tbody>
@@ -550,51 +531,14 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
 <script>
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches && !document.documentElement.classList.contains('motion');
 const $ = id => document.getElementById(id);
-const NS = 'http://www.w3.org/2000/svg';
-const svg = $('iso'), far = $('far'), stage = $('stage');
+const stage = $('stage'), rv = $('roomview');
 
 /* ---------- smooth scroll: wheel input eased toward its target, touch left native ---------- */
 const lenis = !reduce && window.Lenis ? new Lenis({ lerp: .085 }) : null;
 if (lenis) { const loop = t => { lenis.raf(t); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
 
-/* ---------- isometric engine ---------- */
-const U = 25, OX = 500, OY = 200;
-const P = (x, y, z) => [OX + (x - y) * U * 0.866, OY + (x + y) * U * 0.5 - z * U];
-const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); return `rgb(${[n >> 16, n >> 8 & 255, n & 255].map(v => Math.round(v * k))})`; };
-function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
-function poly(pts, fill, g, stroke = '#141826'){ return el('polygon', { points: pts.map(q => P(...q).join(',')).join(' '), fill, stroke, 'stroke-width': 1.4, 'stroke-linejoin': 'round' }, g); }
-function drawBox({ x, y, z, w, d, h, col }, g){
-  poly([[x + w, y, z], [x + w, y + d, z], [x + w, y + d, z + h], [x + w, y, z + h]], shade(col, .78), g);
-  poly([[x, y + d, z], [x + w, y + d, z], [x + w, y + d, z + h], [x, y + d, z + h]], shade(col, .62), g);
-  poly([[x, y, z + h], [x + w, y, z + h], [x + w, y + d, z + h], [x, y + d, z + h]], col, g);
-}
-const items = [];
-const box = (x, y, z, w, d, h, col, group) => items.push({ x, y, z, w, d, h, col, group });
-const people = [];
-const person = (x, y, col, group) => people.push({ x, y, col, group });
-
-/* ---------- a faint city behind, for depth ---------- */
-(() => {
-  const g = el('g', {}, far); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  const cells = [];
-  for (let i = -14; i < 30; i += 2.4) for (let j = -14; j < 30; j += 2.4) {
-    if (i > -3 && i < 19 && j > -3 && j < 19) continue;
-    cells.push({ x: i, y: j, h: 1 + rnd() * 7 });
-  }
-  cells.sort((a, b) => (a.x + a.y) - (b.x + b.y));
-  cells.forEach(c => drawBox({ x: c.x, y: c.y, z: -1, w: 1.8, d: 1.8, h: c.h, col: rnd() < .08 ? '#3a5aa8' : '#2a3766' }, g));
-  g.querySelectorAll('polygon').forEach(p => p.setAttribute('stroke', '#1a2550'));
-})();
-
-/* ---------- the building ---------- */
-const WHITE = '#eceaf0', NAVY = '#262c40', BLUE = '#4d9fff', GOLD = '#f0c060', CORAL = '#ff7a63', MINT = '#5fd3b3', DARK = '#1b2030', SKIN = '#d9a07a';
-el('polygon', { points: [P(-1, 17.6, -1.4), P(17.6, 17.6, -1.4), P(17.6, -1, -1.4)].map(p => p.join(',')).join(' ') + ' ' + P(19, 19, -3).join(','), fill: '#0f1630', opacity: .55 }, svg); // shadow
-box(-1, -1, -1, 18, 18, 1, '#e3e1ea', 'base');
-
-const A = ['01110', '10001', '10001', '11111', '10001', '10001', '10001'];
-const G = ['01111', '10000', '10000', '10111', '10001', '10001', '01110'];
-[[A, 1.5], [G, 9.5]].forEach(([L, x0]) => L.forEach((row, r) => [...row].forEach((c, k) => { if (c === '1') box(x0 + k, -1.6, 3.2 + (6 - r) * 1.05, 1, 1.4, 1.05, WHITE, 'sign'); })));
-
+/* ---------- the building's plan, in grid units: x runs right, y runs toward you, z is up ---------- */
+const WHITE = '#eceaf0', NAVY = '#262c40', BLUE = '#4d9fff', GOLD = '#f0c060', CORAL = '#ff7a63', MINT = '#5fd3b3', DARK = '#1b2030', SKIN = '#e2aa86', SKY = '#172246';
 const ROOMS = {
   flexo:    { x: 0,  y: 0,  s: 6, floor: BLUE },
   planorah: { x: 10, y: 0,  s: 6, floor: GOLD },
@@ -602,82 +546,319 @@ const ROOMS = {
   cybrik:   { x: 10, y: 10, s: 6, floor: MINT },
   server:   { x: 5.5, y: 5.5, s: 5, floor: NAVY }
 };
-for (const [id, r] of Object.entries(ROOMS)) {
-  box(r.x, r.y, 0, r.s, r.s, .3, r.floor, id);
-  box(r.x, r.y, .3, r.s, .35, 2.6, WHITE, id);
-  box(r.x, r.y + .35, .3, .35, r.s - .35, 2.6, WHITE, id);
-  box(r.x + .6, r.y + .6, 2.4, .6, .6, .5, '#c9cbd6', id);   // ceiling lamp
-}
-// gym: rack of dumbbells, bench, treadmill, front desk with a phone screen
-box(1, 1.2, .3, 4, 1, 1, NAVY, 'flexo'); for (let k = 0; k < 4; k++) box(1.2 + k, 1.4, 1.3, .6, .6, .5, DARK, 'flexo');
-box(1.2, 3.4, .3, .8, 2, .9, CORAL, 'flexo');
-box(4, 3.2, .3, 1.4, 2.4, .5, DARK, 'flexo'); box(4, 3.2, .8, .3, .4, 1.3, DARK, 'flexo');
-box(.5, 2.6, 1.4, .1, 1, .6, '#9fd0ff', 'flexo');                                   // wall screen: WhatsApp receipt
-person(2.4, 4.2, BLUE, 'flexo'); person(4.4, 4.6, CORAL, 'flexo');
-// study: shelf of books, desk with screen, learner
-box(11, 1, .3, 1, 4, 2.2, WHITE, 'planorah'); [0, 1, 2, 3].forEach(k => box(11.1, 1.2 + k * .9, .9 + (k % 2) * .5, .8, .6, .9, [BLUE, CORAL, MINT, NAVY][k], 'planorah'));
-box(13, 2.6, .3, 2.5, 1.4, 1.2, '#c7c3d1', 'planorah'); box(13.6, 2.8, 1.5, .3, 1, 1, NAVY, 'planorah');
-box(12.2, 4.6, .3, 3, .2, 1.6, '#fff8e6', 'planorah');                              // roadmap board
-person(14, 4.2, GOLD, 'planorah');
-// call centre: two rows of desks, agents with headsets
-box(1.2, 11.5, .3, 3.5, 1.3, 1.1, WHITE, 'crm'); box(1.6, 11.8, 1.4, .8, .7, .35, DARK, 'crm'); box(3.4, 11.8, 1.4, .8, .7, .35, DARK, 'crm');
-box(1.2, 14, .3, 3.5, 1.3, 1.1, WHITE, 'crm'); box(2.5, 14.3, 1.4, .8, .7, .35, BLUE, 'crm');
-person(2, 13, CORAL, 'crm'); person(3.6, 13, NAVY, 'crm'); person(3, 15.6, MINT, 'crm');
-// visa desk: counter, papers, stamp, waiting chairs, client
-box(11, 12.5, .3, 4.5, 1.2, 1.3, WHITE, 'cybrik'); box(12, 12.7, 1.6, 1, .8, .5, '#fff8e6', 'cybrik'); box(14, 12.8, 1.6, .5, .5, .7, CORAL, 'cybrik');
-box(11.5, 14.6, .3, 1.2, 1.2, 1.6, NAVY, 'cybrik'); box(14, 15, .3, .9, .9, .7, BLUE, 'cybrik');
-person(13, 11.6, MINT, 'cybrik'); person(12.6, 14.4, GOLD, 'cybrik');
-// server: three racks
-[0, 1.5, 3].forEach(k => box(6.2 + k, 6.3, .3, 1.1, 1.1, 3.4, DARK, 'server'));
-
+const ORDER = ['flexo', 'planorah', 'crm', 'cybrik', 'server'];
 const PIPES = { flexo: [[8, 8], [3, 8], [3, 6]], planorah: [[8, 8], [8, 3], [10, 3]], crm: [[8, 8], [8, 13], [6, 13]], cybrik: [[8, 8], [13, 8], [13, 10]] };
-for (const [pid, pts] of Object.entries(PIPES)) for (let k = 0; k < pts.length - 1; k++) {
-  const [a, b] = [pts[k], pts[k + 1]];
-  box(Math.min(a[0], b[0]) - .2, Math.min(a[1], b[1]) - .2, .05, Math.abs(a[0] - b[0]) + .4, Math.abs(a[1] - b[1]) + .4, .25, '#b9c6e6', 'pipe-' + pid);
-}
 
-const depth = i => i.x + i.w / 2 + i.y + i.d / 2 + i.z * .2;
-items.sort((p, q) => depth(p) - depth(q));
-const groups = {};
-const gFor = name => groups[name] || (groups[name] = el('g', ROOMS[name] ? { class: 'room', 'data-room': name } : {}));
-items.filter(i => i.group === 'base').forEach(i => drawBox(i, gFor('base'))); svg.appendChild(gFor('base'));
-items.filter(i => i.group.startsWith('pipe')).forEach(i => drawBox(i, gFor('pipes'))); svg.appendChild(gFor('pipes'));
-['sign', 'planorah', 'flexo', 'server', 'cybrik', 'crm'].forEach(n => {
-  items.filter(i => i.group === n).forEach(i => drawBox(i, gFor(n)));
-  people.filter(p => p.group === n).sort((a, b) => a.x + a.y - b.x - b.y).forEach(p => {
-    const g = el('g', { class: 'person' }, gFor(n));
-    drawBox({ x: p.x, y: p.y, z: .3, w: .45, d: .45, h: .95, col: p.col }, g);
-    const [hx, hy] = P(p.x + .22, p.y + .22, 1.55); el('circle', { cx: hx, cy: hy, r: 6.5, fill: SKIN, stroke: '#141826', 'stroke-width': 1.4 }, g);
-  });
-  svg.appendChild(gFor(n));
-});
-const leds = [];
-[0, 1.5, 3].forEach(k => [1, 1.8, 2.6].forEach(h => { const [cx, cy] = P(7.3 + k, 6.85, .3 + h); leds.push(el('circle', { cx, cy, r: 3.2, fill: Math.random() < .5 ? MINT : GOLD }, gFor('server'))); }));
-const beacons = {};
-for (const [id, r] of Object.entries(ROOMS)) { const [bx, by] = P(r.x + .9, r.y + .9, 3.3); beacons[id] = el('circle', { cx: bx, cy: by, r: 8, fill: '#3a4260', stroke: '#141826', 'stroke-width': 2, class: 'beacon' }, gFor(id)); }
-const packetLayer = el('g', {}, svg);
+/* ---------- the 3D world, built once three.js arrives; everything below talks to it through W ---------- */
+let W = null, onStage = false, ambient = true;
 
-/* ---------- packets ---------- */
-function travel(pts, { colour = GOLD, dur = 1100, r = 6, layer = packetLayer } = {}){
-  return new Promise(done => {
-    if (reduce || pts.length < 2) return done();
-    const sp = pts.map(([x, y]) => P(x, y, .5));
-    const halo = el('circle', { r: r * 2.4, fill: colour, opacity: .25 }, layer);
-    const c = el('circle', { r, fill: colour, stroke: '#141826', 'stroke-width': 2 }, layer);
-    const frames = sp.map(([x, y]) => ({ transform: `translate(${x}px,${y}px)` }));
-    const opts = { duration: dur, easing: 'linear', fill: 'forwards' };
-    halo.animate(frames, opts); c.animate(frames, opts).onfinish = () => { c.remove(); halo.remove(); done(); };
+async function build(){
+  const THREE = await import('three');
+  const { RoundedBoxGeometry } = await import('three/addons/geometries/RoundedBoxGeometry.js');
+  const r = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  r.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+  const canvas = r.domElement;
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', 'A toy 3D building topped by the letters AG. A server room in the middle is wired by glass pipes to four rooms: a gym, a study, a call centre and a visa desk. Requests travel the pipes as glowing packets.');
+  stage.prepend(canvas);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(SKY);
+  scene.fog = new THREE.Fog(SKY, 78, 135);
+  const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 300);
+  scene.add(new THREE.HemisphereLight('#e4ecff', '#2f3b6a', 1.45));
+  const sun = new THREE.DirectionalLight('#fff2dc', 2.5);
+  sun.position.set(-4, 30, 22); sun.target.position.set(8, 0, 8); scene.add(sun, sun.target);
+  sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 17, bottom: -17, near: 5, far: 70 });
+  sun.shadow.camera.updateProjectionMatrix();
+  sun.shadow.bias = -.0004; sun.shadow.normalBias = .03;
+
+  /* shapes: rounded blocks, cached by size; one material per room and colour so rooms can fade on their own */
+  const V = (x, y, z) => new THREE.Vector3(x, z, y);
+  const geos = new Map(), mats = new Map(), dimmable = {}, groups = {};
+  const rbox = (w, h, d) => { const k = `${w.toFixed(2)},${h.toFixed(2)},${d.toFixed(2)}`; if (!geos.has(k)) geos.set(k, new RoundedBoxGeometry(w, h, d, 3, Math.min(.09, Math.min(w, h, d) * .3))); return geos.get(k); };
+  const mat = (col, room, own) => {
+    const k = room + col; if (!own && mats.has(k)) return mats.get(k);
+    const m = new THREE.MeshStandardMaterial({ color: col, roughness: .62 });
+    m.userData.base = m.color.clone(); (dimmable[room] ||= []).push(m);
+    if (!own) mats.set(k, m);
+    return m;
+  };
+  const grp = n => { if (!groups[n]) { groups[n] = new THREE.Group(); groups[n].userData.room = n; scene.add(groups[n]); } return groups[n]; };
+  const mesh = (geo, m, parent) => { const o = new THREE.Mesh(geo, m); o.castShadow = o.receiveShadow = true; parent.add(o); return o; };
+  const box = (x, y, z, w, d, h, col, room, own) => { const o = mesh(rbox(w, h, d), mat(col, room, own), grp(room)); o.position.set(x + w / 2, z + h / 2, y + d / 2); return o; };
+  const glow = (o, col, k = .55) => { o.material.emissive.set(col); o.material.emissiveIntensity = k; return o; };
+
+  /* the island the building stands on */
+  box(-1, -1, -1, 18, 18, 1, '#e6e4ee', 'base');
+  box(-.2, -.2, -2.3, 16.4, 16.4, 1.3, '#8790bb', 'base');
+  box(1.2, 1.2, -3.3, 13.6, 13.6, 1, '#5f6a9e', 'base');
+
+  /* the letters, block by block; they fall into place the first time you see them and hop when touched */
+  const A = ['01110', '10001', '10001', '11111', '10001', '10001', '10001'];
+  const G = ['01111', '10000', '10000', '10111', '10001', '10001', '01110'];
+  const cubes = [];
+  [[A, 1.5], [G, 9.5]].forEach(([L, x0]) => L.forEach((row, rr) => [...row].forEach((c, k) => {
+    if (c !== '1') return;
+    const o = box(x0 + k + .02, -.9, (6 - rr) + 3.1, .96, .8, .96, WHITE, 'sign');
+    o.userData.home = o.position.y; o.userData.v = 0;
+    if (!reduce) o.position.y += 9 + (x0 + k) * .45 + (6 - rr) * .3;
+    cubes.push(o);
+  })));
+
+  /* the rooms: floor, two walls with a trim in the room's colour, a beacon and three lamps */
+  const floors = {}, beacons = {}, lamps = {};
+  const orb = new THREE.SphereGeometry(1, 24, 16);
+  for (const [id, q] of Object.entries(ROOMS)) {
+    floors[id] = box(q.x, q.y, 0, q.s, q.s, .3, q.floor, id, true);
+    const trim = id === 'server' ? '#3a4260' : q.floor;
+    box(q.x, q.y, .3, q.s, .3, 2.4, WHITE, id); box(q.x, q.y + .3, .3, .3, q.s - .3, 2.4, WHITE, id);
+    box(q.x, q.y, 2.7, q.s, .32, .12, trim, id); box(q.x, q.y + .3, 2.7, .32, q.s - .3, .12, trim, id);
+    const b = mesh(orb, new THREE.MeshStandardMaterial({ color: '#3a4260', roughness: .35 }), grp(id));
+    b.scale.setScalar(.26); b.position.copy(V(q.x + .16, q.y + .16, 3.1)); beacons[id] = b;
+    lamps[id] = [[.3, .35], [.62, .5], [.42, .78]].map(([fx, fy]) => {
+      const l = mesh(orb, new THREE.MeshStandardMaterial({ color: '#d4d6e2', roughness: .3, emissive: GOLD, emissiveIntensity: 0 }), grp(id));
+      l.scale.setScalar(.15); l.position.copy(V(q.x + q.s * fx, q.y + q.s * fy, 2.35)); l.castShadow = false; l.visible = false; return l;   // shown only inside the room
+    });
+  }
+  ['flexo', 'crm', 'cybrik'].forEach(id => { const q = ROOMS[id]; glow(box(q.x + 1.6, q.y + .26, 1.1, q.s - 3.2, .08, .95, '#bfe0ff', id, true), '#6fb4ff', .25); });
+
+  /* people: a capsule, a head with two eyes, and something to do */
+  const capsule = new THREE.CapsuleGeometry(.2, .34, 6, 14), eyeG = new THREE.SphereGeometry(.035, 10, 8), eyeM = new THREE.MeshStandardMaterial({ color: '#141826' });
+  const people = [];
+  const person = (x, y, col, room, kind, face = Math.PI / 4, z = .3, extra = {}) => {
+    const g = new THREE.Group(); g.position.set(x, z, y); g.rotation.y = face; grp(room).add(g);
+    const body = mesh(capsule, mat(col, room), g); body.position.y = .38;
+    const head = mesh(orb, mat(SKIN, room), g); head.scale.setScalar(.2); head.position.y = .93;
+    [-.36, .36].forEach(ex => { const e = new THREE.Mesh(eyeG, eyeM); e.scale.setScalar(5); e.position.set(ex, .15, .88); head.add(e); });
+    const p = { g, body, head, kind, room, z, seed: Math.random() * 6, jump: -9, ...extra };
+    people.push(p); return p;
+  };
+  const headset = p => {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(1.08, .14, 8, 24, Math.PI), new THREE.MeshStandardMaterial({ color: DARK })); p.head.add(band);
+    const mic = new THREE.Mesh(orb, band.material); mic.scale.setScalar(.2); mic.position.set(.95, -.45, .55); p.head.add(mic);
+  };
+
+  /* the gym: kettlebells on a rack, a bench, a treadmill with a runner, a lifter, a receipt on the wall */
+  box(1, .9, .3, 4, .9, .9, NAVY, 'flexo');
+  for (let k = 0; k < 4; k++) box(1.25 + k * .95, 1.05, 1.2, .5, .5, .42, DARK, 'flexo');
+  box(1.2, 3.1, .3, .8, 2, .45, CORAL, 'flexo');
+  box(3.9, 2.7, .3, 1.4, 2.8, .3, DARK, 'flexo'); box(3.98, 2.78, .6, 1.24, 2.64, .04, '#3a4260', 'flexo'); box(4.35, 2.7, .6, .5, .2, 1.05, DARK, 'flexo');
+  glow(box(.32, 2.3, 1.2, .06, 1.4, .8, '#9fd0ff', 'flexo', true), '#5aa8ff', .4);
+  const lifter = person(2.6, 4.5, BLUE, 'flexo', 'lift');
+  const bell = new THREE.Group(); lifter.g.add(bell); bell.position.set(0, 1.3, .12);
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .7, 8), new THREE.MeshStandardMaterial({ color: '#9aa3c4' })); bar.rotation.z = Math.PI / 2; bell.add(bar);
+  [-.33, .33].forEach(dx => { const w = new THREE.Mesh(orb, mat(DARK, 'flexo')); w.scale.setScalar(.12); w.position.x = dx; w.castShadow = true; bell.add(w); });
+  lifter.prop = bell;
+  person(4.6, 4.3, CORAL, 'flexo', 'run', Math.PI, .64);
+
+  /* the study: a shelf of books, a desk with a glowing screen, the roadmap board, a learner */
+  box(10.35, .9, .3, .8, 3.6, 2.1, WHITE, 'planorah');
+  [BLUE, CORAL, MINT, NAVY].forEach((c, k) => box(10.5, 1.1 + k * .85, .9 + (k % 2) * .5, .72, .55, .75, c, 'planorah'));
+  box(11.7, .3, .9, 3.6, .08, 1.5, '#fff8e6', 'planorah', true);
+  [BLUE, BLUE, GOLD, '#c9cbd6'].forEach((c, k) => box(11.95 + k * .85, .36, 1.15 + (k % 2) * .6, .55, .07, .32, c, 'planorah'));
+  box(12.8, 2.4, .3, 2.6, 1.3, .85, '#c7c3d1', 'planorah');
+  box(13.4, 2.55, 1.15, 1.4, .12, .8, NAVY, 'planorah'); glow(box(13.48, 2.66, 1.22, 1.24, .04, .66, '#9fd0ff', 'planorah', true), '#5aa8ff', .6);
+  person(14.1, 4.1, GOLD, 'planorah', 'type', Math.PI);
+
+  /* the call centre: two rows of desks, three agents on headsets */
+  box(1.2, 11.3, .3, 3.8, 1.1, .8, WHITE, 'crm'); box(1.6, 11.4, 1.1, .9, .1, .55, DARK, 'crm'); box(3.6, 11.4, 1.1, .9, .1, .55, DARK, 'crm');
+  box(1.2, 13.9, .3, 3.8, 1.1, .8, WHITE, 'crm'); glow(box(2.6, 14, 1.1, .9, .1, .55, BLUE, 'crm', true), BLUE, .5);
+  [[2.05, 12.9, CORAL], [4.05, 12.9, NAVY], [3.05, 15.5, MINT]].forEach(([x, y, c]) => headset(person(x, y, c, 'crm', 'talk', Math.PI)));
+
+  /* the visa desk: a counter with papers and a busy stamp, chairs, a plant, a client pacing */
+  box(10.8, 12.4, .3, 4.6, 1, .95, WHITE, 'cybrik'); box(11.8, 12.6, 1.25, .9, .6, .05, '#fff8e6', 'cybrik');
+  const stamp = new THREE.Group(); grp('cybrik').add(stamp); stamp.position.copy(V(14.3, 12.9, 1.25));
+  mesh(rbox(.42, .16, .42), mat(CORAL, 'cybrik'), stamp).position.y = .08;
+  mesh(new THREE.CylinderGeometry(.06, .06, .35, 10), mat(DARK, 'cybrik'), stamp).position.y = .33;
+  mesh(orb, mat(DARK, 'cybrik'), stamp).scale.setScalar(.11); stamp.children[2].position.y = .52;
+  box(11.1, 14.8, .3, .8, .8, .45, NAVY, 'cybrik'); box(11.1, 15.5, .75, .8, .12, .6, NAVY, 'cybrik');
+  mesh(new THREE.CylinderGeometry(.28, .22, .45, 16), mat(CORAL, 'cybrik'), grp('cybrik')).position.copy(V(15.2, 15.2, .52));
+  [[0, 0, .95, .42], [.18, .12, 1.15, .3], [-.15, -.1, 1.2, .26]].forEach(([dx, dy, z, s]) => { const l = mesh(orb, mat(MINT, 'cybrik'), grp('cybrik')); l.scale.setScalar(s); l.position.copy(V(15.2 + dx, 15.2 + dy, z)); });
+  person(13, 11.4, MINT, 'cybrik', 'type', 0);
+  person(12.2, 15.3, GOLD, 'cybrik', 'walk', 0, .3, { a: [12.2, 15.3], b: [13.6, 13.8] });
+
+  /* the server room: three racks of blinking lights */
+  const leds = [];
+  [0, 1.5, 3].forEach(k => {
+    box(6.2 + k, 6.3, .3, 1.1, 1.1, 2.8, DARK, 'server');
+    [.9, 1.5, 2.1].forEach(h => [0, 1].forEach(j => { const c = Math.random() < .5 ? MINT : GOLD; leds.push(glow(box(6.35 + k + j * .45, 7.37, .3 + h, .3, .05, .1, c, 'server', true), c, 1.4)); }));
   });
+
+  /* glass pipes from the server room to every room */
+  const pipeM = new THREE.MeshStandardMaterial({ color: '#d6e4ff', transparent: true, opacity: .42, roughness: .15, depthWrite: false });
+  const tube = new THREE.CylinderGeometry(.17, .17, 1, 14);
+  for (const pts of Object.values(PIPES)) for (let k = 0; k < pts.length; k++) {
+    const j = new THREE.Mesh(orb, pipeM); j.scale.setScalar(.17); j.position.copy(V(pts[k][0], pts[k][1], .5)); scene.add(j);
+    if (k === pts.length - 1) continue;
+    const [a, b] = [pts[k], pts[k + 1]], t = new THREE.Mesh(tube, pipeM);
+    t.position.copy(V((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, .5)); t.scale.y = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    t.rotation[a[0] === b[0] ? 'x' : 'z'] = Math.PI / 2; scene.add(t);
+  }
+
+  /* a city far below, and a few clouds */
+  { const n = 240, city = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ roughness: .9 }), n);
+    let seed = 7, k = 0; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color();
+    for (let i = 0; i < 5000 && k < n; i++) {
+      const x = Math.round((-40 + rnd() * 96) / 3) * 3, z = Math.round((-40 + rnd() * 96) / 3) * 3, h = 2 + rnd() * 9, s = 1.6 + rnd() * 1.2;
+      if (Math.hypot(x - 8, z - 8) < 15) continue;
+      m4.compose(new THREE.Vector3(x, -18 + h / 2, z), q, new THREE.Vector3(s, h, s)); city.setMatrixAt(k, m4); city.setColorAt(k++, c.set(rnd() < .1 ? '#33508f' : '#242f5e'));
+    }
+    city.count = k; scene.add(city); }
+  const cloudM = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, transparent: true, opacity: .92 });
+  const clouds = [[-7, 3, 1], [23, 11, -1.5], [3, 23, -3], [22, -5, 3]].map(([x, y, z], i) => {
+    const g = new THREE.Group(); [[0, 0, 0, 1.4], [1.3, .2, .2, 1], [-1.2, -.1, .1, 1.1], [.3, .5, -.6, .9]].forEach(([a, b, c, s]) => { const m = new THREE.Mesh(orb, cloudM); m.position.set(a, b, c); m.scale.setScalar(s); g.add(m); });
+    g.position.copy(V(x, y, z)); scene.add(g); return { g, x: g.position.x, k: .5 + i * .2 };
+  });
+
+  /* packets: a bright core in a soft halo, sliding along a path */
+  const pktMats = {}, live = [];
+  const pktMat = col => pktMats[col] || (pktMats[col] = [new THREE.MeshBasicMaterial({ color: col }), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .28, depthWrite: false })]);
+  const lights = [0, 1, 2].map(() => { const l = new THREE.PointLight(GOLD, 0, 7, 1.6); scene.add(l); return l; });
+
+  /* pointing: rooms lift under the cursor, letters hop */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), pickable = [...ORDER.map(grp), grp('sign')];
+  let hover = null, pick = false, px = 0, pxs = 0, pointer = false;
+  const toNdc = e => { const b = canvas.getBoundingClientRect(); ndc.set((e.clientX - b.left) / b.width * 2 - 1, -(e.clientY - b.top) / b.height * 2 + 1); };
+  const hit = () => { ray.setFromCamera(ndc, cam); for (const h of ray.intersectObjects(pickable, true)) { let o = h.object; while (o && !o.userData.room) o = o.parent; if (o) return { room: o.userData.room, obj: h.object }; } return null; };
+  const hop = o => { if (o.userData.home !== undefined && o.position.y - o.userData.home < .01 && !reduce) o.userData.v = 7.5; };
+  canvas.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; toNdc(e); px = ndc.x; pointer = pick = true; });
+  canvas.addEventListener('pointerleave', () => { pointer = false; hover = null; canvas.classList.remove('hover'); });
+  canvas.addEventListener('click', e => { if (rv.open) return; toNdc(e); const h = hit(); if (!h) return; if (h.room === 'sign') hop(h.obj); else openRoom(h.room); });
+
+  /* the camera: true isometric angle, aimed at a target, sized by how much of the world fits the height */
+  const tgt = new THREE.Vector3();
+  let w = 1, h = 1;
+  const fit = () => { const host = canvas.parentElement; w = host.clientWidth || 1; h = host.clientHeight || 1; r.setSize(w, h, false); };
+  function aim(v){
+    const az = (v.az + pxs * 3) * Math.PI / 180, el = v.el * Math.PI / 180;   // 35.3° is the true isometric angle
+    tgt.set(v.t[0], v.t[2], v.t[1]);
+    cam.position.set(tgt.x + 60 * Math.cos(el) * Math.sin(az), tgt.y + 60 * Math.sin(el), tgt.z + 60 * Math.cos(el) * Math.cos(az));
+    cam.lookAt(tgt);
+    const a = w / h; cam.left = -v.s * a / 2; cam.right = v.s * a / 2; cam.top = v.s / 2; cam.bottom = -v.s / 2;
+    cam.setViewOffset(w, h, -v.ox * w, v.oy * h, w, h);
+  }
+
+  /* room focus: other rooms fade toward the night colour, the active one keeps its own */
+  const GREY = new THREE.Color('#4a5272'), dim = Object.fromEntries(ORDER.map(n => [n, { cur: 0, to: 0 }]));
+  let lampRoom = null, lit = 0, flashT = -9, flashRoom = null, ledT = 0, T = 0, waveT = 4;
+  const popping = [], labels = [], pv = new THREE.Vector3();
+  const backOut = k => 1 + 2.4 * Math.pow(k - 1, 3) + 1.4 * Math.pow(k - 1, 2);
+
+  function frame(now){
+    const t = now / 1000, dt = Math.min(.05, t - (T || t)); T = t;
+    pxs += ((pointer ? px : 0) - pxs) * Math.min(1, dt * 3);
+
+    if (pick && !rv.open) {
+      pick = false; const hh = hit();
+      hover = hh && hh.room !== 'sign' ? hh.room : null;
+      if (hh && hh.room === 'sign') hop(hh.obj);
+      canvas.classList.toggle('hover', !!hover);
+    }
+    for (const n of ORDER) {
+      const g = groups[n]; g.position.y += ((hover === n && !rv.open ? .3 : 0) - g.position.y) * Math.min(1, dt * 10);
+      const d = dim[n]; if (Math.abs(d.cur - d.to) > .002) { d.cur += (d.to - d.cur) * Math.min(1, dt * 5); dimmable[n].forEach(m => m.color.copy(m.userData.base).lerp(GREY, d.cur * .62)); }
+    }
+
+    if (!reduce) {
+      for (const o of cubes) { const u = o.userData; if (u.v || o.position.y > u.home) { u.v -= 38 * dt; o.position.y += u.v * dt; if (o.position.y <= u.home) { o.position.y = u.home; u.v = u.v < -4 ? -u.v * .3 : 0; } } }
+      if (ambient && t > waveT) { waveT = t + 7; cubes.forEach(o => setTimeout(() => hop(o), (o.position.x - 1.5) * 70)); }
+      for (const p of people) {
+        let y = p.z; const g = p.g, s = t + p.seed;
+        if (p.kind === 'run') y += Math.abs(Math.sin(t * 9 + p.seed)) * .12;
+        else if (p.kind === 'lift') { p.prop.position.y = 1.25 + (Math.sin(s * 3) * .5 + .5) * .32; y += Math.abs(Math.sin(s * 3)) * .02; }
+        else if (p.kind === 'type') { p.head.rotation.x = .12 + Math.sin(s * 7) * .06; y += Math.abs(Math.sin(s * 2)) * .02; }
+        else if (p.kind === 'talk') { g.rotation.z = Math.sin(s * 1.6) * .07; p.head.rotation.y = Math.sin(s * 1.1) * .35; }
+        else if (p.kind === 'walk') {
+          const k = (Math.sin(s * .55) + 1) / 2, dir = Math.cos(s * .55) > 0 ? 1 : -1;
+          g.position.x = p.a[0] + (p.b[0] - p.a[0]) * k; g.position.z = p.a[1] + (p.b[1] - p.a[1]) * k;
+          g.rotation.y = Math.atan2((p.b[0] - p.a[0]) * dir, (p.b[1] - p.a[1]) * dir); y += Math.abs(Math.sin(t * 7)) * .07;
+        }
+        const j = t - p.jump; if (j >= 0 && j < .55) y += Math.sin(j / .55 * Math.PI) * .6;
+        g.position.y = y;
+      }
+      stamp.position.y = 1.25 + Math.abs(Math.sin(t * 2.2)) * .45;
+      groups.sign.position.y = Math.sin(t * 1.1) * .18;
+      clouds.forEach(c => c.g.position.x = c.x + Math.sin(t * .08 * c.k + c.x) * 3);
+      if (t - ledT > .3) { ledT = t; leds.forEach(l => l.material.emissiveIntensity = Math.random() < .25 ? .1 : 1.4); }
+    }
+    ORDER.forEach(id => { const m = beacons[id].material; m.emissiveIntensity = m.userData.lit ? .7 + Math.sin(t * 3) * .3 : 0; });
+
+    for (let k = popping.length - 1; k >= 0; k--) { const o = popping[k], q = (t - o.userData.pop) / .45; if (q >= 1) { o.scale.copy(o.userData.size); popping.splice(k, 1); } else o.scale.copy(o.userData.size).multiplyScalar(q <= 0 ? .001 : backOut(q)); }
+    if (lampRoom) lamps[lampRoom].forEach((l, k) => {
+      const on = k < lit, m = l.material; m.emissiveIntensity += ((on ? 1.8 : 0) - m.emissiveIntensity) * Math.min(1, dt * 6);
+      lights[k].position.copy(l.position).add(groups[lampRoom].position); lights[k].intensity += ((on ? 4 : 0) - lights[k].intensity) * Math.min(1, dt * 6);
+    });
+    if (flashRoom) { const f = floors[flashRoom].material; f.emissiveIntensity = Math.max(0, 1 - (t - flashT) / .8) * .7; }
+
+    for (let k = live.length - 1; k >= 0; k--) {
+      const p = live[k], f = (t - (p.t0 ??= t)) / p.dur;
+      if (f >= 1) { scene.remove(p.core, p.halo); live.splice(k, 1); p.done(); continue; }
+      let d = f * p.total, i = 0; while (i < p.lens.length - 1 && d > p.lens[i]) d -= p.lens[i++];
+      p.core.position.lerpVectors(p.path[i], p.path[i + 1], p.lens[i] ? d / p.lens[i] : 1); p.halo.position.copy(p.core.position);
+    }
+
+    if (view) aim(view);
+    for (const l of labels) { pv.copy(l.p).project(cam); l.el.style.transform = `translate(${((pv.x + 1) / 2 * w).toFixed(1)}px,${((1 - pv.y) / 2 * h).toFixed(1)}px) translate(-50%,-100%)`; }
+    r.render(scene, cam);
+  }
+
+  const wake = () => r.setAnimationLoop((onStage || rv.open) && !document.hidden ? frame : null);
+  document.addEventListener('visibilitychange', wake);
+  new ResizeObserver(fit).observe(stage); new ResizeObserver(fit).observe(rv);
+  fit();
+
+  W = {
+    wake,
+    travel(pts, { colour, dur, r: rad }){
+      return new Promise(done => {
+        const path = pts.map(([x, y]) => V(x, y, .5)), [cm, hm] = pktMat(colour), s = rad / 30;
+        const core = new THREE.Mesh(orb, cm), halo = new THREE.Mesh(orb, hm);
+        core.scale.setScalar(s); halo.scale.setScalar(s * 2.3); core.position.copy(path[0]); halo.position.copy(path[0]);
+        const lens = path.slice(1).map((q, k) => q.distanceTo(path[k]));
+        scene.add(core, halo); live.push({ core, halo, path, lens, total: lens.reduce((a, b) => a + b, 0), dur: dur / 1000, done });
+      });
+    },
+    focus(id){ ORDER.forEach(n => dim[n].to = id === 'all' || n === id || n === 'server' ? 0 : 1); },
+    beacons(m){ ORDER.forEach(id => { const b = beacons[id].material, v = m[id] || 0; b.color.set(v >= 3 ? GOLD : v ? '#8a7440' : '#3a4260'); b.emissive.set(GOLD); b.userData.lit = v >= 3; }); },
+    enter(id){
+      lampRoom = id; lit = 0; lights.forEach(l => l.intensity = 0);
+      ORDER.forEach(n => lamps[n].forEach(l => l.visible = n === id));
+      if (reduce) return;
+      grp(id).children.forEach((o, k) => { if (o === floors[id]) return; o.userData.size ??= o.scale.clone(); o.userData.pop = T + .3 + k * .025; o.scale.setScalar(.001); popping.push(o); });
+    },
+    lamps(n){ lit = n; },
+    flash(id){ flashRoom = id; flashT = T; floors[id].material.emissive.set(CORAL); },
+    cheer(id){ people.filter(p => p.room === id).forEach((p, k) => p.jump = T + k * .09); },
+    label(text, [x, y]){
+      const el = document.createElement('span'); el.className = 'blip'; el.textContent = text; $('rv-blips').appendChild(el);
+      labels.push({ el, p: V(x, y, 2.6).add(grp(lampRoom || 'server').position) }); requestAnimationFrame(() => el.classList.add('on')); return el;
+    },
+    unlabel(el){ const k = labels.findIndex(l => l.el === el); if (k >= 0) labels.splice(k, 1); el.remove(); },
+    dock(inside){
+      (inside ? rv : stage).prepend(canvas); fit(); hover = null;
+      if (!inside) { labels.splice(0).forEach(l => l.el.remove()); lampRoom = null; lights.forEach(l => l.intensity = 0); ORDER.forEach(n => lamps[n].forEach(l => l.visible = false)); }
+      wake();
+    }
+  };
+  W.focus(active || 'all'); W.beacons(mastered); wake();
 }
-let ambient = true, onStage = false;
-new IntersectionObserver(([e]) => { onStage = e.isIntersecting; stage.classList.toggle('paused', !onStage); }).observe(stage);
-if (!reduce) {
-  setInterval(() => { if (!ambient || !onStage || document.hidden) return; const ids = Object.keys(PIPES), id = ids[Math.floor(Math.random() * ids.length)]; const pts = PIPES[id]; travel(Math.random() < .5 ? pts : pts.slice().reverse(), { colour: Math.random() < .5 ? GOLD : '#ffffff', dur: 1400 }); }, 600);
-  setInterval(() => { if (onStage && !document.hidden) leds.forEach(l => l.setAttribute('opacity', Math.random() < .25 ? .25 : 1)); }, 300);
-}
+build().catch(err => { console.warn(err); stage.classList.add('flat'); $('hint').textContent = 'The 3D building needs WebGL; the cards still walk you through each system.'; });
+
+let view = null;
+const travel = (pts, o = {}) => W && !reduce ? W.travel(pts, { colour: GOLD, dur: 1100, r: 6, ...o }) : Promise.resolve();
+if (!reduce) setInterval(() => {
+  if (!ambient || !onStage || document.hidden || !W) return;
+  const ids = Object.keys(PIPES), pts = PIPES[ids[Math.floor(Math.random() * ids.length)]];
+  travel(Math.random() < .5 ? pts : pts.slice().reverse(), { colour: Math.random() < .5 ? GOLD : '#ffffff', dur: 1400 });
+}, 600);
+new IntersectionObserver(([e]) => { onStage = e.isIntersecting; if (W) W.wake(); }).observe(stage);
 
 /* ---------- each room's story and its real request path ---------- */
-const R1 = [7.3, 6.3], R2 = [8.8, 6.3], R3 = [10.3, 6.3], HUB = [8, 8];
+const R1 = [6.75, 7.7], R2 = [8.25, 7.7], R3 = [9.75, 7.7], HUB = [8, 8];   // in front of the three racks
 const STOPS = {
   flexo: {
     title: 'Flexo · the gym', job: 'Run members, plans, attendance and renewals for many gyms from one codebase, without one gym ever seeing another gym’s data.',
@@ -760,37 +941,29 @@ for (const [id, s] of Object.entries(STOPS)) {
   s.stack.forEach(t => { const sp = document.createElement('span'); sp.className = 'tag'; sp.textContent = t; c.querySelector('.chips').appendChild(sp); });
 }
 
-/* ---------- the camera: the building is moved as one GPU layer, never redrawn ---------- */
-const HOME = [90, 30, 820, 660];
-function frameFor(id){
-  if (id === 'all') return HOME;
-  const pts = [];
-  for (const r of id === 'server' ? [ROOMS.server] : [ROOMS[id], ROOMS.server]) pts.push(P(r.x, r.y, 3), P(r.x + r.s, r.y, 3), P(r.x, r.y + r.s, 0), P(r.x + r.s, r.y + r.s, 0));
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  const w = (Math.max(...xs) - Math.min(...xs)) * (id === 'server' ? 3.6 : 2.5), h = w * (stage.clientHeight / stage.clientWidth || .66);
-  const cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
-  const wide = matchMedia('(min-width: 901px)').matches;
-  return [cx - w * (wide ? .64 : .5), cy - h / 2, w, h];   // on desktop the room sits right of the card
+
+/* ---------- camera states: what it looks at, how much it sees, from which side ---------- */
+const AZ = { flexo: 32, planorah: 58, crm: 36, cybrik: 54, server: 45 };
+function stateFor(id, inside){
+  const wide = innerWidth > 900;
+  if (id === 'all') return { t: [8, 8, 2.8], s: wide ? 25 : 27, az: 45, el: 35.3, ox: wide ? .15 : 0, oy: 0 };
+  const q = ROOMS[id], k = id === 'server' ? 0 : inside ? .12 : .25;
+  const cx = q.x + q.s / 2, cy = q.y + q.s / 2, t = [cx + (8 - cx) * k, cy + (8 - cy) * k, 1];
+  // inside, the camera rises to look over the walls; the room sits left of the console, or above the phone sheet
+  if (inside) return { t, s: (wide ? 11 : 12) + (id === 'server' ? 1.5 : 0), az: AZ[id], el: 50, ox: wide ? -.18 : 0, oy: wide ? 0 : .2 };
+  return { t, s: id === 'server' ? 10.5 : 12.5, az: AZ[id], el: 35.3, ox: wide ? .17 : 0, oy: 0 };   // room right of the tour card
 }
+const mix = (a, b, e) => Object.fromEntries(Object.keys(a).map(k => [k, k === 't' ? a.t.map((v, j) => v + (b.t[j] - v) * e) : a[k] + (b[k] - a[k]) * e]));
 const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-let view = HOME.slice(), tween, held = false;
-// show the region v = [x, y, w, h] of the drawing: map it onto the stage as one transform of the 2x-sized svg
-function show(v){
-  view = v;
-  const W = stage.clientWidth, H = stage.clientHeight;
-  const k0 = 2 * Math.min(W / HOME[2], H / HOME[3]), ox = (2 * W - HOME[2] * k0) / 2 - HOME[0] * k0, oy = (2 * H - HOME[3] * k0) / 2 - HOME[1] * k0;
-  const k1 = Math.min(W / v[2], H / v[3]), s = k1 / k0;
-  const tx = (W - v[2] * k1) / 2 - v[0] * k1 - s * ox, ty = (H - v[3] * k1) / 2 - v[1] * k1 - s * oy;
-  svg.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${s})`;
-  far.style.transform = `translate3d(${(500 - (v[0] + v[2] / 2)) * .12}px,${(360 - (v[1] + v[3] / 2)) * .12}px,0) scale(${1 + (820 / v[2] - 1) * .15})`;
-}
+let tween, held = false;
+function show(v){ view = v; }
 // a timed move, for stepping into a room and back out; the scroll hands the camera over while it runs
 function camera(to, dur, then){
-  const from = view.slice(), t0 = performance.now();
+  const from = view || to, t0 = performance.now();
   held = true; cancelAnimationFrame(tween);
   const step = now => {
-    const t = dur ? Math.min(1, (now - t0) / dur) : 1, e = easeInOut(t);
-    show(from.map((v, k) => v + (to[k] - v) * e));
+    const t = dur ? Math.min(1, (now - t0) / dur) : 1;
+    show(mix(from, to, easeInOut(t)));
     if (t < 1) tween = requestAnimationFrame(step); else if (then) then();
   };
   tween = requestAnimationFrame(step);
@@ -813,8 +986,7 @@ async function playFlow(id){
 function visit(id){
   if (id === active) return; active = id; run++;
   document.querySelectorAll('.flow li').forEach(li => li.classList.remove('now'));
-  svg.classList.toggle('dim', id !== 'all');
-  document.querySelectorAll('.room').forEach(g => g.classList.toggle('on', g.dataset.room === id || g.dataset.room === 'server'));
+  if (W) W.focus(id);
   ambient = id === 'all';
   $('hint').style.opacity = id === 'all' ? 1 : 0;
   if (id !== 'all') playFlow(id);
@@ -825,14 +997,14 @@ const steps = [...document.querySelectorAll('.step')];
 let marks = [], frames = [];
 function measure(){
   marks = steps.map(s => { const r = s.getBoundingClientRect(); return r.top + scrollY + r.height / 2; });
-  frames = steps.map(s => frameFor(s.dataset.room));
+  frames = steps.map(s => stateFor(s.dataset.room));
 }
 function scrollTarget(){
   const sh = stage.offsetHeight, focal = innerWidth > 900 ? innerHeight / 2 : sh + (innerHeight - sh) / 2, c = scrollY + focal;
   let i = 0; while (i < marks.length - 2 && c > marks[i + 1]) i++;
   const f = Math.min(1, Math.max(0, (c - marks[i]) / (marks[i + 1] - marks[i])));
   const e = reduce ? +(f >= .5) : easeInOut(Math.min(1, Math.max(0, (f - .2) / .6)));
-  return { v: frames[i].map((a, k) => a + (frames[i + 1][k] - a) * e), room: steps[f < .5 ? i : i + 1].dataset.room };
+  return { v: mix(frames[i], frames[i + 1], e), room: steps[f < .5 ? i : i + 1].dataset.room };
 }
 function tour(){ if (held) return; const { v, room } = scrollTarget(); show(v); visit(room); }
 
@@ -871,75 +1043,31 @@ const CARDS = {
   crm: [['A new lead fills the form.', 'Call in seconds', 'Add to a sheet', 'Leads in a sheet go cold.'], ['The lead picks up. Who talks first?', 'The voice agent', 'A sales rep', 'The agent talks first; the rep gets the summary.'], ['The call ends. What lands on the lead?', 'A summary', 'Nothing', 'The transcript is summarised back onto the lead.'], ['How does the follow-up go out?', 'WhatsApp', 'A letter', 'Customers already live on WhatsApp.']],
   cybrik: [['A routine visa question at 11 pm.', 'Agent answers', 'Wait for 9 am', 'Routine answers should never wait.'], ['A question the agent cannot answer.', 'Hand to a person', 'Guess', 'In immigration a wrong answer can cost a visa.'], ['Where do the Bedrock keys live?', 'On the server', 'In the app', 'Keys never leave the server.']]
 };
-const ORDER = ['flexo', 'planorah', 'crm', 'cybrik', 'server'];
 const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 const mastered = store.get('ag-mastered') || {};
 function paintProgress(){
   const n = ORDER.filter(id => mastered[id] >= 3).length;
   $('meter').style.transform = 'scaleX(' + n / ORDER.length + ')'; $('meter-n').textContent = n + ' / ' + ORDER.length;
-  ORDER.forEach(id => beacons[id].setAttribute('fill', mastered[id] >= 3 ? GOLD : mastered[id] ? '#8a7440' : '#3a4260'));
+  if (W) W.beacons(mastered);
 }
 paintProgress();
 
-/* ---------- opening a room ---------- */
-const rv = $('roomview'), rsvg = $('rv-svg');
-let roomId, rvLayer, rvLabels, rvRun = 0, glows = [], floorEl;
+/* ---------- inside a room: the camera flies in, the room pops into place, its request runs on a loop ---------- */
+let roomId, rvRun = 0;
 const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>';
 
-function renderRoom(id){
-  rsvg.innerHTML = '';
-  const r = ROOMS[id], parts = id === 'server' ? ['server'] : (['planorah', 'flexo'].includes(id) ? [id, 'server'] : ['server', id]);
-  const all = parts.map(n => ROOMS[n]);
-  const x0 = Math.min(...all.map(q => q.x)) - .6, y0 = Math.min(...all.map(q => q.y)) - .6;
-  const x1 = Math.max(...all.map(q => q.x + q.s)) + .6, y1 = Math.max(...all.map(q => q.y + q.s)) + .6;
-  let k = 0; const later = g => { g.setAttribute('class', (g.getAttribute('class') || '') + ' drop'); g.style.animationDelay = (reduce ? 0 : 120 + k++ * 28) + 'ms'; return g; };
-  drawBox({ x: x0, y: y0, z: -.6, w: x1 - x0, d: y1 - y0, h: .6, col: '#e3e1ea' }, later(el('g', {}, rsvg)));
-  if (PIPES[id]) items.filter(i => i.group === 'pipe-' + id).forEach(i => drawBox(i, later(el('g', {}, rsvg))));
-  parts.forEach(n => {
-    items.filter(i => i.group === n).forEach(i => {
-      const g = later(el('g', {}, rsvg)); drawBox(i, g);
-      if (n === id && i.z === 0 && i.h === .3) floorEl = g;
-    });
-    people.filter(p => p.group === n).sort((a, b) => a.x + a.y - b.x - b.y).forEach(p => {
-      const outer = later(el('g', {}, rsvg)), g = el('g', { class: 'person' }, outer);
-      drawBox({ x: p.x, y: p.y, z: .3, w: .45, d: .45, h: .95, col: p.col }, g);
-      const [hx, hy] = P(p.x + .22, p.y + .22, 1.55); el('circle', { cx: hx, cy: hy, r: 6.5, fill: SKIN, stroke: '#141826', 'stroke-width': 1.4 }, g);
-    });
-  });
-  [0, 1.5, 3].forEach(q => [1, 1.8, 2.6].forEach(h => { const [cx, cy] = P(7.3 + q, 6.85, .3 + h); const c = el('circle', { cx, cy, r: 3.2, fill: Math.random() < .5 ? MINT : GOLD, class: 'led' }, rsvg); c.style.animationDuration = (1 + Math.random() * 1.6) + 's'; }));
-  // three lamps in the room that come on with each right answer
-  glows = [[.3, .3], [.65, .45], [.4, .75]].map(([fx, fy]) => { const [gx, gy] = P(r.x + r.s * fx, r.y + r.s * fy, 1.2); return el('circle', { cx: gx, cy: gy, r: 46, fill: GOLD, class: 'glow' }, rsvg); });
-  rvLayer = el('g', {}, rsvg); rvLabels = el('g', {}, rsvg);
-  // frame: the room and the racks it talks to, room left of the console on wide screens
-  const pts = [P(x0, y0, 3), P(x1, y0, 3), P(x0, y1, 0), P(x1, y1, 0), P(x0, y0, -.6), P(x1, y1, -.6)];
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  const wide = innerWidth > 900, W = innerWidth, H = innerHeight;
-  let w = (Math.max(...xs) - Math.min(...xs)) * (wide ? 1.75 : 1.15), h = w * H / W;
-  const needH = (Math.max(...ys) - Math.min(...ys)) * (wide ? 1.2 : 2.4); if (h < needH) { h = needH; w = h * W / H; }
-  const cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
-  rsvg.setAttribute('viewBox', [cx - w * (wide ? .36 : .5), cy - h * (wide ? .5 : .27), w, h].join(' '));
-}
-
-function label(text, [x, y]){
-  const [lx, ly] = P(x, y, 2.2), g = el('g', { class: 'tagline' }, rvLabels);
-  const t = el('text', { x: lx, y: ly, 'text-anchor': 'middle', 'font-family': 'Outfit, sans-serif', 'font-size': 13, 'font-weight': 600, fill: '#141826' }, g);
-  t.textContent = text;
-  const bb = t.getBBox(); g.insertBefore(el('rect', { x: bb.x - 10, y: bb.y - 6, width: bb.width + 20, height: bb.height + 12, rx: 12, fill: '#ffffff' }), t);
-  requestAnimationFrame(() => g.classList.add('on'));
-  return g;
-}
 async function roomFlow(id){
   const my = ++rvRun, flow = STOPS[id].flow;
-  if (reduce) { $('rv-now').innerHTML = '<b>Request path:</b> ' + flow.map(f => f[0]).join(' → '); return; }
+  if (reduce || !W) { $('rv-now').innerHTML = '<b>Request path:</b> ' + flow.map(f => f[0]).join(' → '); return; }
   await new Promise(r => setTimeout(r, 1300));
   while (my === rvRun && rv.open) {
     for (let k = 0; k < flow.length && my === rvRun; k++) {
       const [text, path] = flow[k];
       $('rv-now').innerHTML = '<b>In the pipes now:</b> '; $('rv-now').append(text);
-      const tag = label(text, path[path.length - 1]);
-      await travel(path, { dur: 1300, r: 9, layer: rvLayer });
+      const tag = W.label(text, path[path.length - 1]);
+      await travel(path, { dur: 1300, r: 9 });
       await new Promise(r => setTimeout(r, 650));
-      tag.classList.remove('on'); setTimeout(() => tag.remove(), 600);
+      tag.classList.remove('on'); setTimeout(() => W.unlabel(tag), 600);
     }
     await new Promise(r => setTimeout(r, 900));
   }
@@ -950,7 +1078,7 @@ const LIMIT = 8000;
 function startGame(){
   const pool = CARDS[roomId].slice(); for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
   deck = pool.slice(0, 3); ci = 0; wins = 0;
-  glows.forEach(g => g.classList.remove('on'));
+  if (W) W.lamps(0);
   $('rv-game').hidden = false; $('rv-done').hidden = true; paintStars(0); card();
 }
 function paintStars(n){ $('rv-stars').innerHTML = [0, 1, 2].map(k => '<span class="' + (k < n ? 'won' : '') + '">' + STAR + '</span>').join(''); }
@@ -976,36 +1104,45 @@ function answer(btn){
   $('rv-answer').children[0].textContent = ok ? 'Right.' : btn ? 'Not quite.' : 'Out of time.';
   $('rv-answer').children[1].textContent = c[3];
   if (ok) {
-    wins++; paintStars(wins); glows[wins - 1].classList.add('on');
+    wins++; paintStars(wins);
+    if (W) { W.lamps(wins); W.cheer(roomId); }
     const path = STOPS[roomId].flow.flatMap(f => f[1]);
-    for (let k = 0; k < 3; k++) setTimeout(() => travel(path, { dur: 2200, r: 7, layer: rvLayer, colour: k % 2 ? '#ffffff' : GOLD }), k * 220);
-  } else if (floorEl) { floorEl.classList.remove('floorflash'); void floorEl.getBBox(); floorEl.classList.add('floorflash'); }
+    for (let k = 0; k < 3; k++) setTimeout(() => travel(path, { dur: 2200, r: 7, colour: k % 2 ? '#ffffff' : GOLD }), k * 220);
+  } else if (W) W.flash(roomId);
   $('rv-score').textContent = wins + ' right';
   nextT = setTimeout(() => { if (!rv.open) return; ci++; ci < 3 ? card() : finish(); }, 2600);
 }
 function finish(){
   mastered[roomId] = Math.max(mastered[roomId] || 0, wins); store.set('ag-mastered', mastered); paintProgress();
+  if (wins === 3 && W) W.cheer(roomId);
   $('rv-game').hidden = true; $('rv-done').hidden = false;
   $('rv-done-title').textContent = wins === 3 ? 'Room mastered.' : wins ? wins + ' of 3. Nearly there.' : 'The pipes are still dark.';
-  $('rv-done-text').textContent = wins === 3 ? 'Its beacon is lit on the building. ' + ORDER.filter(id => mastered[id] >= 3).length + ' of 5 rooms powered.' : 'Play again to light this room\u2019s beacon.';
+  $('rv-done-text').textContent = wins === 3 ? 'Its beacon is lit on the building. ' + ORDER.filter(id => mastered[id] >= 3).length + ' of 5 rooms powered.' : 'Play again to light this room’s beacon.';
   const next = ORDER[(ORDER.indexOf(roomId) + 1) % ORDER.length];
   $('rv-next').textContent = 'Next: ' + STOPS[next].title.split(' · ')[0]; $('rv-next').dataset.next = next;
   $('rv-next').focus({ preventScroll: true });
 }
 
-function openRoom(id){
-  roomId = id;
+function enterRoom(id){
+  roomId = id; rvRun++;
   $('rv-title').textContent = STOPS[id].title; $('rv-job').textContent = STOPS[id].job; $('rv-now').textContent = '';
+  if (W) { W.enter(id); W.focus(id); }
+}
+function openRoom(id){
+  if (rv.open) return;
+  if (lenis) lenis.stop();
   const go = () => {
-    renderRoom(id);
     rv.classList.remove('closing'); document.documentElement.style.overflow = 'hidden';
-    rv.showModal(); startGame(); roomFlow(id);
+    rv.showModal();
+    if (W) W.dock(true);
+    enterRoom(id);
+    camera(stateFor(id, true), reduce ? 0 : 500);
+    startGame(); roomFlow(id);
     rv.querySelector('.choice').focus({ preventScroll: true });
   };
-  if (lenis) lenis.stop();
-  if (reduce) return go();
-  // the camera glides into the room first, then the room opens around you
-  camera(frameFor(id), 800); setTimeout(go, 700);
+  if (reduce || !W) return go();
+  // the camera glides toward the room first, then the room opens around you
+  camera(stateFor(id), 650); setTimeout(go, 600);
 }
 function closeRoom(){
   rvRun++; clearTimeout(nextT); cancelAnimationFrame(raf); locked = true;
@@ -1014,16 +1151,345 @@ function closeRoom(){
 }
 rv.addEventListener('close', () => {
   document.documentElement.style.overflow = ''; rvRun++; if (lenis) lenis.start();
+  if (W) W.dock(false);
   const a = active; active = null; visit(a || 'all');
   camera(scrollTarget().v, reduce ? 0 : 900, () => { held = false; tour(); });
 });
 rv.addEventListener('cancel', e => { e.preventDefault(); closeRoom(); });
 $('rv-close').addEventListener('click', closeRoom);
 $('rv-again').addEventListener('click', startGame);
-$('rv-next').addEventListener('click', e => { const next = e.currentTarget.dataset.next; rvRun++; renderRoom(next); roomId = next; $('rv-title').textContent = STOPS[next].title; $('rv-job').textContent = STOPS[next].job; startGame(); roomFlow(next); rv.querySelector('.choice').focus({ preventScroll: true }); });
+$('rv-next').addEventListener('click', e => {
+  const next = e.currentTarget.dataset.next;
+  enterRoom(next); camera(stateFor(next, true), reduce ? 0 : 900);
+  startGame(); roomFlow(next); rv.querySelector('.choice').focus({ preventScroll: true });
+});
 rv.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => answer(b)));
 document.addEventListener('click', e => { const b = e.target.closest('[data-enter]'); if (b) openRoom(b.dataset.enter); });
-svg.querySelectorAll('.room').forEach(g => g.addEventListener('click', () => openRoom(g.dataset.room)));
+
+/* ---------- toys: the hero desk and a little scene in every project card ----------
+   One hidden WebGL renderer draws each scene that is on screen and copies it into that card's own
+   canvas, so the pictures scroll with the page exactly and the GPU keeps a single context. */
+async function toys(){
+  const els = [...document.querySelectorAll('[data-toy]')];
+  const THREE = await import('three');
+  const { RoundedBoxGeometry } = await import('three/addons/geometries/RoundedBoxGeometry.js');
+  await document.fonts.ready;
+  const dpr = Math.min(devicePixelRatio, 2);
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  r.setPixelRatio(dpr); r.setClearColor(0, 0); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  /* the kit: rounded blocks, balls, screens drawn on canvases, and the same toy people as the building */
+  const geos = new Map(), mats = new Map(), ORB = new THREE.SphereGeometry(1, 28, 18);
+  const rb = (w, h, d, rad = Math.min(.08, Math.min(w, h, d) * .3)) => { const k = [w, h, d, rad].join(); if (!geos.has(k)) geos.set(k, new RoundedBoxGeometry(w, h, d, 3, rad)); return geos.get(k); };
+  const M = (col, o = {}) => { const k = col + JSON.stringify(o); if (!mats.has(k)) mats.set(k, new THREE.MeshStandardMaterial({ color: col, roughness: .55, ...o })); return mats.get(k); };
+  const add = (p, geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; p.add(m); return m; };
+  const block = (p, w, h, d, col, x, y, z, o) => add(p, rb(w, h, d), M(col, o), x, y, z);
+  const ball = (p, s, col, x, y, z, o) => { const m = add(p, ORB, M(col, o), x, y, z); m.scale.setScalar(s); return m; };
+  const group = (p, x = 0, y = 0, z = 0) => { const g = new THREE.Group(); g.position.set(x, y, z); p.add(g); return g; };
+  const paint = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); draw(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.userData = { g, draw }; return t; };
+  const glass = (p, w, h, map, x, y, z) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map, toneMapped: false, transparent: true })); m.position.set(x, y, z); p.add(m); return m; };
+  const font = (g, size, weight = 600) => g.font = `${weight} ${size}px Outfit, system-ui, sans-serif`;
+  const pill = (g, x, y, w, h, rad, col) => { g.fillStyle = col; g.beginPath(); g.roundRect(x, y, w, h, rad); g.fill(); };
+  const text = (g, s, x, y, size, col, weight, align = 'left') => { font(g, size, weight); g.fillStyle = col; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y); };
+  const eyeM = new THREE.MeshStandardMaterial({ color: '#141826' }), capsule = new THREE.CapsuleGeometry(.2, .34, 6, 14);
+  function person(p, col, x, z, face = 0, hair){
+    const g = group(p, x, 0, z); g.rotation.y = face;
+    const body = add(g, capsule, M(col), 0, .38, 0);
+    const head = add(g, ORB, M(SKIN), 0, .93, 0); head.scale.setScalar(.2);
+    const eyes = [-.36, .36].map(ex => { const e = new THREE.Mesh(ORB, eyeM); e.scale.setScalar(.18); e.position.set(ex, .15, .9); head.add(e); return e; });
+    if (hair) { const h = new THREE.Mesh(new THREE.SphereGeometry(1.06, 24, 12, 0, Math.PI * 2, 0, Math.PI * .45), M(hair)); h.rotation.x = -.35; head.add(h); }
+    return { g, body, head, eyes };
+  }
+  function laptop(p, map, x, z, rot = 0, s = 1){
+    const g = group(p, x, 0, z); g.rotation.y = rot; g.scale.setScalar(s);
+    block(g, 2, .09, 1.3, '#2a3048', 0, .045, 0); block(g, 1.7, .02, .7, '#3a4260', 0, .1, .15);
+    const hinge = group(g, 0, .09, -.62); hinge.rotation.x = -.22;
+    block(hinge, 2, 1.32, .06, '#2a3048', 0, .66, 0); glass(hinge, 1.86, 1.18, map, 0, .68, .032);
+    return g;
+  }
+  function phone(p, map, x, y, z, rot = 0, s = 1){
+    const g = group(p, x, y, z); g.rotation.y = rot; g.scale.setScalar(s);
+    block(g, .7, 1.4, .1, DARK, 0, 0, 0, { roughness: .35 }); glass(g, .62, 1.3, map, 0, 0, .052);
+    return g;
+  }
+  const arc = (a, b, k, h, out) => out.set(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k + Math.sin(k * Math.PI) * h, a.z + (b.z - a.z) * k);
+  const backOut = k => 1 + 2.4 * Math.pow(k - 1, 3) + 1.4 * Math.pow(k - 1, 2);
+  const clamp01 = v => Math.min(1, Math.max(0, v));
+
+  /* screens: the same interfaces the cards used to show, drawn crisp onto the toys */
+  const ui = (g, w, h, title, sub) => { g.fillStyle = '#f7f8fa'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.fillRect(0, 0, w, 76); text(g, title, 32, 38, 26, '#151a24', 600); text(g, sub, w - 32, 38, 24, '#5b6372', 400, 'right'); g.fillStyle = '#e4e7ec'; g.fillRect(0, 76, w, 2); };
+  const STATUS = { ok: ['#e1f5ea', '#13663a'], due: ['#fff2d4', '#7a5200'], late: ['#fde3e3', '#8f1f1f'] };
+  const chip = (g, s, kind, x, y) => { font(g, 21, 600); const w = g.measureText(s).width + 28; pill(g, x, y - 17, w, 34, 17, STATUS[kind][0]); text(g, s, x + 14, y, 21, STATUS[kind][1], 600); };
+  const renewals = row => paint(1024, 640, (g, w, h) => {
+    ui(g, w, h, 'Iron Temple Fitness · Renewals', 'Today');
+    [['Member', 40], ['Plan', 330], ['Expires', 600], ['Status', 760]].forEach(([s, x]) => text(g, s, x, 112, 21, '#5b6372', 500));
+    [['Harpreet Kaur', 'Quarterly · ₹3,999', '21 Oct', 'Paid · read', 'ok'], ['Rohit Sharma', 'Monthly · ₹1,499', '22 Oct', 'Reminder sent', 'due'], ['Simran Gill', 'Annual · ₹12,000', '24 Oct', 'Reminder sent', 'due'], ['Aman Verma', 'Monthly · ₹1,499', '18 Oct', 'Lapsed 3 days', 'late'], ['Navjot Singh', 'Half-yearly · ₹6,999', '02 Nov', 'Active', 'ok']].forEach((c, k) => {
+      const y = 186 + k * 92; if (k === row) pill(g, 16, y - 40, w - 32, 80, 14, '#e8f0ff');
+      text(g, c[0], 40, y, 24, '#151a24', 600); text(g, c[1], 330, y, 23, '#151a24', 400); text(g, c[2], 600, y, 23, '#151a24', 400); chip(g, k === row ? 'Paid · read' : c[3], k === row ? 'ok' : c[4], 760, y);
+    });
+  });
+  const chat = (title, msgs, tint = '#e5e9e4') => paint(420, 880, (g, w, h) => {
+    g.fillStyle = tint; g.fillRect(0, 0, w, h); g.fillStyle = '#1f6f5c'; g.fillRect(0, 0, w, 110); text(g, title, 30, 66, 26, '#fff', 600);
+    let y = 150;
+    for (const [s, out] of msgs) {
+      font(g, 22, 500); const words = s.split(' '), lines = []; let line = '';
+      for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (g.measureText(t).width > 250) { lines.push(line); line = wd; } else line = t; } lines.push(line);
+      const bw = Math.max(...lines.map(l => g.measureText(l).width)) + 36, bh = lines.length * 30 + 26, x = out ? w - bw - 20 : 20;
+      pill(g, x, y, bw, bh, 18, out ? '#d8f6c6' : '#fff'); lines.forEach((l, k) => text(g, l, x + 18, y + 28 + k * 30, 22, '#151a24', 500));
+      y += bh + 18;
+    }
+  });
+  const code = paint(960, 600, (g, w, h) => {
+    g.fillStyle = '#151a24'; g.fillRect(0, 0, w, h); g.fillStyle = '#1f2433'; g.fillRect(0, 0, w, 54);
+    [CORAL, GOLD, MINT].forEach((c, k) => { g.fillStyle = c; g.beginPath(); g.arc(34 + k * 30, 27, 9, 0, 7); g.fill(); });
+    text(g, 'webhooks.py', w / 2, 27, 22, '#a9b0be', 500, 'center');
+    const src = ['def razorpay_webhook(request):', '    if not verify(request.body, sig):', '        return HttpResponse(status=400)', '    event = Event.objects.get_or_create(', '        id=payload["id"], gym=gym)', '    member.extend(plan)', '    whatsapp.send(member, "receipt")', '    return HttpResponse(status=200)'];
+    src.forEach((l, k) => {
+      let x = 34; const y = 100 + k * 58;
+      for (const tok of l.split(/(\s+|[()=,.]|"[^"]*")/).filter(Boolean)) {
+        const col = /^(def|if|not|return)$/.test(tok) ? CORAL : /^"/.test(tok) ? MINT : /^\d+$/.test(tok) ? GOLD : /^(verify|extend|send|get_or_create|HttpResponse|razorpay_webhook)$/.test(tok) ? BLUE : '#d6dae4';
+        font(g, 27, 500); g.font = '500 27px Consolas, "Cascadia Mono", monospace'; g.fillStyle = col; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillText(tok, x, y); x += g.measureText(tok).width;
+      }
+    });
+  });
+  const tag = (s, col = '#fff', ink = '#151a24') => paint(320, 112, (g, w, h) => { pill(g, 4, 4, w - 8, h - 8, 50, col); text(g, s, w / 2, h / 2 + 2, 44, ink, 700, 'center'); });
+  const coinFace = paint(256, 256, (g, w) => { g.fillStyle = '#f0c060'; g.fillRect(0, 0, w, w); g.fillStyle = '#d9a640'; g.beginPath(); g.arc(128, 128, 104, 0, 7); g.fill(); text(g, '₹', 128, 136, 150, '#fff6dd', 800, 'center'); });
+  coinFace.center.set(.5, .5); coinFace.rotation = Math.PI / 2;   // the cylinder cap maps its texture a quarter turn round
+  function coin(p, x, y, z, s = 1){
+    const g = group(p, x, y, z); g.scale.setScalar(s);
+    const side = M(GOLD, { metalness: .3, roughness: .35 }), face = new THREE.MeshStandardMaterial({ map: coinFace, metalness: .3, roughness: .35 });
+    const c = add(g, new THREE.CylinderGeometry(.42, .42, .1, 40), [side, face, face]); c.rotation.x = Math.PI / 2;
+    return g;
+  }
+  function bubble(p, col, x, y, z, s = 1){
+    const g = group(p, x, y, z); g.scale.setScalar(s);
+    block(g, 1, .66, .16, col, 0, 0, 0, { roughness: .4 });
+    const tail = add(g, new THREE.ConeGeometry(.12, .26, 12), M(col, { roughness: .4 }), -.3, -.38, 0); tail.rotation.z = .5;
+    g.userData.dots = [-.24, 0, .24].map(dx => ball(g, .07, '#ffffff', dx, 0, .1));
+    return g;
+  }
+
+  /* a stage for every scene: soft light, a shadow catcher, a camera that fits the frame */
+  const views = [];
+  function stage(el, { frame = [6.5, 3.6], target = [0, .7, 0], dir = [0, .5, 1], fov = 26, ground = 0 } = {}){
+    const scene = new THREE.Scene(), world = group(scene);
+    scene.add(new THREE.HemisphereLight('#ffffff', '#4a5272', 1.55));
+    const sun = new THREE.DirectionalLight('#fff4e2', 2.3); sun.position.set(-3, 7, 5); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+    Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 25 }); sun.shadow.camera.updateProjectionMatrix(); sun.shadow.normalBias = .02; scene.add(sun);
+    const catcher = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: .22 })); catcher.rotation.x = -Math.PI / 2; catcher.position.y = ground; catcher.receiveShadow = true; scene.add(catcher);
+    const cam = new THREE.PerspectiveCamera(fov, 1, .1, 100);
+    const c = document.createElement('canvas'); c.className = 'toy-canvas'; c.setAttribute('aria-hidden', 'true'); el.prepend(c);
+    const v = { el, c, ctx: c.getContext('2d'), scene, world, cam, frame, target: new THREE.Vector3(...target), dir: new THREE.Vector3(...dir).normalize(), ox: 0, oy: 0, px: 0, py: 0, pxs: 0, pys: 0, over: false, born: -1, tick: () => {} };
+    const host = el.closest('.shot, .hero-main') || el;
+    host.addEventListener('pointermove', e => { const b = c.getBoundingClientRect(); v.px = (e.clientX - b.left) / b.width * 2 - 1; v.py = (e.clientY - b.top) / b.height * 2 - 1; v.over = true; });
+    host.addEventListener('pointerleave', () => { v.over = false; });
+    views.push(v); return v;
+  }
+  function fit(v, w, h){
+    const a = w / h, t = Math.tan(v.cam.fov * Math.PI / 360), d = Math.max(v.frame[0] / (2 * t * a), v.frame[1] / (2 * t));
+    v.cam.aspect = a; v.cam.position.copy(v.target).addScaledVector(v.dir, d); v.cam.lookAt(v.target);
+    if (v.ox || v.oy) v.cam.setViewOffset(w, h, -v.ox * w, v.oy * h, w, h); else v.cam.clearViewOffset();
+    v.cam.updateProjectionMatrix();
+  }
+  // things that pop in, one after another, the first time a scene is seen
+  const pop = (v, t) => v.world.children.forEach((o, k) => { o.userData.s ??= o.scale.clone(); o.userData.pop = t + k * .07; o.scale.setScalar(.001); });
+  const popTick = (v, t) => v.world.children.forEach(o => { const p = o.userData.pop; if (p === undefined) return; const q = (t - p) / .6; if (q >= 1) { o.scale.copy(o.userData.s); delete o.userData.pop; } else o.scale.copy(o.userData.s).multiplyScalar(q <= 0 ? .001 : backOut(q)); });
+
+  const mk = { hero: heroScene, flexo: flexoScene, planorah: planorahScene, crm: crmScene, cybrik: cybrikScene, memory: memoryScene };
+  els.forEach(el => mk[el.dataset.toy] && mk[el.dataset.toy](el));
+  document.documentElement.classList.add('toys');
+
+  /* the desk in the hero: you, a laptop running a real webhook, and the three things you build for */
+  function heroScene(el){
+    const v = stage(el, { frame: [7.4, 6.4], target: [0, 1.2, 0], dir: [.5, .55, 1], ground: -1.4 }), w = v.world;
+    const plat = group(w); block(plat, 5, .4, 3.4, '#e6e4ee', 0, -.2, 0); block(plat, 4.4, .5, 2.8, '#8790bb', 0, -.6, 0); block(plat, 3.4, .3, 1.9, '#5f6a9e', 0, -.95, 0);
+    const desk = group(w, .2, 0, -.3); block(desk, 2.6, .12, 1.2, '#c7c3d1', 0, .9, 0); [-1.15, 1.15].forEach(x => block(desk, .14, .84, 1, '#9aa3c4', x, .42, 0));
+    laptop(desk, code, 0, -.05, 0, .82).position.y = .96;
+    const mug = group(desk, .95, .96, .25); add(mug, new THREE.CylinderGeometry(.13, .11, .26, 20), M(WHITE), 0, .13, 0); add(mug, new THREE.TorusGeometry(.08, .025, 8, 16), M(WHITE), .15, .13, 0);
+    const steam = [0, 1, 2].map(k => { const s = new THREE.Mesh(ORB, new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: .6 })); s.scale.setScalar(.06); mug.add(s); return s; });
+    const rack = group(w, 1.85, 0, -.95); block(rack, .8, 2, .8, DARK, 0, 1, 0);
+    const leds = []; [.6, 1.1, 1.6].forEach(y => [-.15, .15].forEach(x => leds.push(block(rack, .2, .07, .04, Math.random() < .5 ? MINT : GOLD, x, y, .41, { emissive: Math.random() < .5 ? MINT : GOLD, emissiveIntensity: 1.2 }))));
+    leds.forEach(l => l.material = l.material.clone());
+    const plant = group(w, -2, 0, -1.1); add(plant, new THREE.CylinderGeometry(.24, .18, .4, 18), M(CORAL), 0, .2, 0); [[0, .62, 0, .3], [.15, .8, .1, .22], [-.14, .85, -.05, .2]].forEach(([x, y, z, s]) => ball(plant, s, MINT, x, y, z));
+    const me = person(w, BLUE, -1.25, .55, .35, '#2a1f1a'); me.g.scale.setScalar(1.55);
+    const tokens = [coin(w, 0, 0, 0, .9), phone(w, chat('Lead · calling', [['Hi, is this a good time?', false]], '#fff'), 0, 0, 0, 0, .55), bubble(w, MINT, 0, 0, 0, .8)];
+    tokens.forEach((o, k) => { o.userData.k = k; o.userData.spin = 0; });
+    const live = [], pkt = new THREE.Vector3(), desk3 = new THREE.Vector3(.2, 1.45, -.4);
+    let nextPkt = 0, blinkT = 2, jumpT = -9;
+    const ray = new THREE.Raycaster();
+    el.closest('.hero-main').addEventListener('click', e => {
+      if (e.target.closest('a,button')) return;
+      const b = v.c.getBoundingClientRect();
+      ray.setFromCamera(new THREE.Vector2((e.clientX - b.left) / b.width * 2 - 1, -((e.clientY - b.top) / b.height * 2 - 1)), v.cam);
+      const hit = ray.intersectObjects([me.g, ...tokens], true)[0]; if (!hit) return;
+      let o = hit.object; while (o.parent !== w) o = o.parent;
+      if (o === me.g) jumpT = T; else o.userData.spin = T;
+    });
+    let T = 0;
+    // the desk fills the top of the card and the name sits under it
+    v.place = (w2, h2) => { const top = (w2 > 640 ? 400 : Math.min(w2 * .96, 380)) / h2; v.ox = .04; v.oy = .5 - top / 2; v.frame = [7.2 / .92, 6.8 / top]; };
+    v.tick = (t, dt) => {
+      T = t;
+      w.rotation.y = -.25 + v.pxs * .18; w.rotation.x = v.pys * .05;
+      // you look at the cursor, and blink now and then
+      me.head.rotation.y += ((v.over ? v.pxs * .9 : Math.sin(t * .5) * .3) - me.head.rotation.y) * Math.min(1, dt * 6);
+      me.head.rotation.x += ((v.over ? v.pys * .4 : 0) - me.head.rotation.x) * Math.min(1, dt * 6);
+      if (t > blinkT) { me.eyes.forEach(e => e.scale.y = .03); if (t > blinkT + .12) { me.eyes.forEach(e => e.scale.y = .18); blinkT = t + 2.5 + Math.random() * 2; } }
+      const j = t - jumpT; me.g.position.y = j < .7 ? Math.sin(j / .7 * Math.PI) * .9 : Math.abs(Math.sin(t * 2)) * .03; me.g.rotation.y = .35 + (j < .7 ? j / .7 * Math.PI * 2 : 0);
+      tokens.forEach((o, k) => {
+        const a = t * .35 + k * Math.PI * 2 / 3;
+        o.position.set(Math.cos(a) * 2.5 + .2, 2.9 + Math.sin(t * 1.3 + k) * .18 + Math.sin(a) * .35, Math.sin(a) * 1.1 - .3);
+        const s = t - o.userData.spin; o.rotation.y = Math.sin(t * .8 + k) * .5 + (s < .8 ? s / .8 * Math.PI * 2 : 0); o.rotation.x = Math.sin(t * .6 + k) * .12;
+        if (o.userData.dots) o.userData.dots.forEach((d, i) => d.position.y = Math.max(0, Math.sin(t * 6 - i * .8)) * .08);
+      });
+      if (t > nextPkt) { nextPkt = t + .9; const from = tokens[Math.floor(Math.random() * 3)]; const m = new THREE.Mesh(ORB, new THREE.MeshBasicMaterial({ color: [GOLD, CORAL, MINT][from.userData.k] })); m.scale.setScalar(.08); w.add(m); live.push({ m, a: from.position.clone(), t0: t }); }
+      for (let k = live.length - 1; k >= 0; k--) { const p = live[k], q = (t - p.t0) / 1.1; if (q >= 1) { w.remove(p.m); live.splice(k, 1); continue; } p.m.position.copy(arc(p.a, desk3, q, .6, pkt)); }
+      steam.forEach((s, k) => { const q = (t * .6 + k / 3) % 1; s.position.set(Math.sin(q * 6 + k) * .05, .3 + q * .7, 0); s.material.opacity = .55 * (1 - q); s.scale.setScalar(.05 + q * .06); });
+      if ((t * 3 | 0) !== v.ledStep) { v.ledStep = t * 3 | 0; leds.forEach(l => l.material.emissiveIntensity = Math.random() < .25 ? .1 : 1.3); }
+    };
+  }
+
+  /* Flexo: a payment hops from the WhatsApp receipt into the renewals table, row by row */
+  function flexoScene(el){
+    const v = stage(el, { frame: [8.6, 3.4], target: [0, .9, 0], dir: [.18, .42, 1] }), w = v.world;
+    const tables = [0, 1, 2, 3, 4].map(renewals);
+    const lap = laptop(w, tables[3], .8, 0, -.12, 1.25), screen = lap.children[2].children[1];
+    phone(w, chat('Iron Temple Fitness', [['Hi Harpreet, your payment of ₹3,999 is received. Plan renewed to 21 Jan.', false], ['Thank you!', true]]), -2.3, .95, .2, .3, 1.15);
+    const bell = group(w, -1, .16, 1.15); bell.rotation.y = .4;
+    add(bell, new THREE.CylinderGeometry(.04, .04, 1.1, 10), M('#9aa3c4'), 0, 0, 0).rotation.z = Math.PI / 2; [-.5, .5].forEach(x => ball(bell, .17, DARK, x, 0, 0));
+    const kb = group(w, 3.4, 0, .9); ball(kb, .32, DARK, 0, .32, 0); add(kb, new THREE.TorusGeometry(.18, .06, 10, 20, Math.PI), M(DARK), 0, .58, 0);
+    const c = coin(w, 0, 0, 0, .55), a = new THREE.Vector3(-2.2, 1.6, .3), b = new THREE.Vector3(.4, 1.3, .2);
+    let row = 3;
+    v.tick = (t) => {
+      w.rotation.y = v.pxs * .2; w.rotation.x = v.pys * .04;
+      const q = (t % 2.4) / 1.4;
+      if (q <= 1) { arc(a, b, q, 1.3, c.position); c.rotation.y = q * Math.PI * 4; c.visible = true; } else c.visible = false;
+      const nr = Math.floor(t / 2.4) % 5; if (nr !== row) { row = nr; screen.material.map = tables[row]; }
+      bell.rotation.z = Math.sin(t * 1.4) * .05;
+    };
+  }
+
+  /* Planorah: a learner hops along the roadmap, each stone lighting up as it is learnt */
+  function planorahScene(el){
+    const v = stage(el, { frame: [7.4, 3.8], target: [-.1, .6, 0], dir: [.25, .7, 1] }), w = v.world;
+    const steps = [['Python', -2.5, .9], ['SQL', -1.2, -.3], ['Django ORM', .2, .6], ['REST APIs', 1.5, -.4], ['Deploy', 2.7, .5]];
+    const stones = steps.map(([s, x, z]) => { const st = block(w, 1, .3, 1, '#e6e4ee', x, .15, z); st.material = st.material.clone(); const tg = glass(st, 1.3, .45, tag(s, '#fff'), 0, .75, 0); tg.material.side = THREE.DoubleSide; return { st, tg, x, z }; });
+    const flag = group(w, 2.7, .3, .5); add(flag, new THREE.CylinderGeometry(.03, .03, 1.1, 8), M(WHITE), .3, .55, -.3); block(flag, .4, .26, .03, CORAL, .5, .95, -.3);
+    const books = group(w, -2.9, 0, -1.1); [BLUE, CORAL, MINT, NAVY].forEach((c, k) => block(books, .9 - k * .06, .16, .65, c, 0, .08 + k * .17, 0).rotation.y = k * .15);
+    const me = person(w, NAVY, -2.5, .9, 0, '#2a1f1a');
+    const pos = new THREE.Vector3();
+    v.tick = (t) => {
+      w.rotation.y = v.pxs * .25; w.rotation.x = v.pys * .05;
+      stones.forEach(s => s.tg.quaternion.copy(v.cam.quaternion));
+      const loop = t % 7.5, k = Math.min(4, Math.floor(loop / 1.2)), q = clamp01((loop - k * 1.2) / .6);
+      const A = stones[k], B = stones[Math.min(4, k + 1)];
+      if (k < 4) arc(new THREE.Vector3(A.x, .3, A.z), new THREE.Vector3(B.x, .3, B.z), q, .9, pos); else pos.set(A.x, .3 + Math.abs(Math.sin(t * 6)) * .15, A.z);
+      me.g.position.copy(pos); me.g.rotation.y = Math.atan2(B.x - A.x, B.z - A.z) || 0;
+      stones.forEach((s, i) => s.st.material.color.set(i < k || (i === k && q > .99) || (k === 4 && i === 4) ? BLUE : i === k + 1 && q > .5 ? '#bcd6ff' : '#e6e4ee'));
+      flag.rotation.y = Math.sin(t * 2) * .15;
+    };
+  }
+
+  /* Voice CRM: the desk phone rings, the voice agent talks, a WhatsApp follow-up pops out */
+  function crmScene(el){
+    const v = stage(el, { frame: [6.4, 3.6], target: [0, .9, 0], dir: [.2, .45, 1] }), w = v.world;
+    const tel = group(w, -1.2, 0, .4); block(tel, 1.5, .5, 1.1, WHITE, 0, .25, 0); block(tel, .9, .1, .5, '#c9cbd6', 0, .52, .2);
+    const hand = group(tel, 0, .62, -.15); block(hand, 1.4, .18, .3, CORAL, 0, 0, 0); [-.6, .6].forEach(x => block(hand, .32, .32, .4, CORAL, x, -.1, 0));
+    const rings = [0, 1, 2].map(() => { const m = new THREE.Mesh(new THREE.TorusGeometry(1, .03, 8, 48), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true })); m.rotation.x = -Math.PI / 2; tel.add(m); m.position.y = .2; return m; });
+    const wave = group(w, .9, 1.9, .2); const bars = [0, 1, 2, 3, 4, 5, 6].map(k => block(wave, .14, 1, .14, '#ffffff', (k - 3) * .24, 0, 0));
+    const pad = phone(w, chat('Call log · Auto-dialler', [['Gurpreet S. · Call back Friday', false], ['Meena R. · Wants price list', false], ['Kunal D. · Retry 6 pm', false]], '#f7f8fa'), 1.9, 1, -.3, -.35, 1.05);
+    const bub = bubble(w, MINT, 1.1, 0, .6, .8);
+    v.tick = (t) => {
+      w.rotation.y = v.pxs * .22; w.rotation.x = v.pys * .05;
+      const loop = t % 6;
+      const ringing = loop < 1.8, talking = loop >= 2.2 && loop < 4.4, sent = loop >= 4.2;
+      tel.rotation.z = ringing ? Math.sin(t * 40) * .04 : 0;
+      hand.position.y = .62 + (talking ? .35 + Math.sin(t * 3) * .03 : ringing ? Math.abs(Math.sin(t * 40)) * .04 : 0);
+      rings.forEach((m, k) => { const q = ((loop / .6) + k / 3) % 1; m.visible = ringing; m.scale.setScalar(.6 + q * 1.4); m.material.opacity = .7 * (1 - q); });
+      wave.scale.setScalar(talking ? 1 : .001);
+      bars.forEach((b, k) => b.scale.y = .2 + Math.abs(Math.sin(t * 9 + k * 1.3)) * .9);
+      const q = clamp01((loop - 4.2) / .5); bub.scale.setScalar(sent ? .8 * backOut(q) : .001); bub.position.y = 1.4 + (sent ? (loop - 4.2) * .25 : 0);
+      bub.userData.dots.forEach((d, i) => d.position.y = Math.max(0, Math.sin(t * 6 - i * .8)) * .08);
+      pad.rotation.y = -.35 + Math.sin(t * .7) * .04;
+    };
+  }
+
+  /* Cybrik: the stamp approves the passport while the visa assistant answers on WhatsApp */
+  function cybrikScene(el){
+    const v = stage(el, { frame: [6.4, 3.6], target: [0, .8, 0], dir: [.2, .55, 1] }), w = v.world;
+    const cover = paint(360, 480, (g, w2, h2) => { g.fillStyle = '#1d3a6e'; g.fillRect(0, 0, w2, h2); g.strokeStyle = GOLD; g.lineWidth = 10; g.beginPath(); g.arc(180, 220, 70, 0, 7); g.stroke(); g.beginPath(); g.arc(180, 220, 36, 0, 7); g.stroke(); text(g, 'PASSPORT', 180, 380, 40, GOLD, 700, 'center'); });
+    const ok = paint(360, 160, (g, w2, h2) => { g.strokeStyle = '#c4485e'; g.lineWidth = 12; g.beginPath(); g.roundRect(14, 14, w2 - 28, h2 - 28, 24); g.stroke(); text(g, 'APPROVED', w2 / 2, h2 / 2 + 4, 58, '#c4485e', 800, 'center'); });
+    const pp = group(w, -1, 0, .3); pp.rotation.y = .25;
+    block(pp, 1.5, .1, 2, '#1d3a6e', 0, .05, 0); const cv = glass(pp, 1.4, 1.86, cover, 0, .105, 0); cv.rotation.x = -Math.PI / 2;
+    const page = group(w, .55, 0, .5); page.rotation.y = -.15; block(page, 1.3, .06, 1.7, '#fff8e6', 0, .03, 0);
+    const mark = glass(page, 1.1, .5, ok, 0, .065, .2); mark.rotation.x = -Math.PI / 2; mark.rotation.z = .2;
+    const stamp = group(w, .55, 0, .7); block(stamp, .6, .22, .6, CORAL, 0, .11, 0); add(stamp, new THREE.CylinderGeometry(.08, .08, .55, 12), M(DARK), 0, .5, 0); ball(stamp, .16, DARK, 0, .85, 0);
+    phone(w, chat('Visa desk assistant', [["My student visa file went in. What's next?", false], ['Biometrics. Tuesday 11:00 or Thursday 15:30?', true], ['Thursday please', false], ['Booked. Checklist sent as a voice note.', true]]), 2, 1.05, -.4, -.4, 1.05);
+    const bubs = [0, 1, 2].map(k => { const b = bubble(w, k % 2 ? '#ffffff' : '#d8f6c6', 2.5, 0, 0, .45); return b; });
+    v.tick = (t) => {
+      w.rotation.y = v.pxs * .22; w.rotation.x = v.pys * .05;
+      const loop = t % 3.2, down = loop > 1 && loop < 1.35;
+      stamp.position.y = down ? 0 : loop < 1 ? .9 - Math.sin(loop / 1 * Math.PI / 2) * .2 : .2 + clamp01((loop - 1.35) / .8) * .7;
+      stamp.position.x = .55 + (loop < 1 ? Math.sin(loop * 3) * .08 : 0);
+      mark.material.opacity = loop > 1.1 ? Math.min(1, (loop - 1.1) * 6) * (1 - clamp01((loop - 2.8) / .4)) : 0;
+      bubs.forEach((b, k) => { const q = (t * .25 + k / 3) % 1; b.position.set(1.5 + (k % 2 ? .5 : -.1), 1.2 + q * 1.6, -.1); b.scale.setScalar(.45 * Math.min(1, q * 6) * (1 - clamp01((q - .8) / .2))); b.userData.dots.forEach((d, i) => d.position.y = Math.max(0, Math.sin(t * 6 - i * .8)) * .08); });
+    };
+  }
+
+  /* Agent memory: a little agent recalls cards from its memory as they circle it */
+  function memoryScene(el){
+    const v = stage(el, { frame: [6.2, 3.8], target: [0, 1.1, 0], dir: [.15, .45, 1] }), w = v.world;
+    const bot = group(w, 0, 0, 0);
+    block(bot, 1, .9, .8, '#c9cbd6', 0, .45, 0); const head = group(bot, 0, 1.45, 0); block(head, 1.3, .9, .9, WHITE, 0, 0, 0);
+    block(head, 1.05, .45, .05, DARK, 0, .02, .45); const eyes = [-.24, .24].map(x => block(head, .18, .18, .04, MINT, x, .02, .48, { emissive: MINT, emissiveIntensity: 1.2 }));
+    add(head, new THREE.CylinderGeometry(.03, .03, .4, 8), M('#9aa3c4'), 0, .65, 0); const bulb = ball(head, .1, GOLD, 0, .9, 0, { emissive: GOLD, emissiveIntensity: .8 });
+    const kinds = [['Decision', BLUE], ['Change', MINT], ['Error', CORAL], ['Deploy', GOLD], ['Decision', BLUE], ['Deploy', GOLD]];
+    const cards = kinds.map(([s, c]) => { const g = group(w); block(g, 1, .62, .05, WHITE, 0, 0, 0); glass(g, .92, .32, tag(s, c, s === 'Deploy' ? '#151a24' : '#fff'), 0, .02, .03); return g; });
+    const drawer = group(w, 2.4, 0, .6); block(drawer, 1, .8, .9, '#3a4260', 0, .4, 0); block(drawer, .3, .08, .06, GOLD, 0, .55, .46);
+    let pick = 0;
+    v.tick = (t) => {
+      w.rotation.y = v.pxs * .25; w.rotation.x = v.pys * .05;
+      head.rotation.y = Math.sin(t * .8) * .25 + v.pxs * .3; bulb.material.emissiveIntensity = .6 + Math.sin(t * 4) * .4;
+      const blink = (t % 3.5) < .12; eyes.forEach(e => e.scale.y = blink ? .1 : 1);
+      const cycle = Math.floor(t / 2.2), q = (t % 2.2) / 2.2; pick = cycle % cards.length;
+      cards.forEach((g, k) => {
+        const a = t * .5 + k * Math.PI * 2 / cards.length;
+        const ring = new THREE.Vector3(Math.cos(a) * 2.3, 1.4 + Math.sin(a * 2) * .25, Math.sin(a) * 1.2);
+        if (k === pick) { const pull = Math.sin(clamp01(q * 1.4) * Math.PI); g.position.copy(ring).lerp(new THREE.Vector3(0, 1.5, .9), pull * .85); g.scale.setScalar(1 + pull * .3); }
+        else { g.position.copy(ring); g.scale.setScalar(1); }
+        g.quaternion.copy(v.cam.quaternion);
+      });
+    };
+  }
+
+  /* one loop for all of them; only scenes on screen are drawn */
+  let size = [0, 0];
+  const io = new IntersectionObserver(es => es.forEach(e => { const v = views.find(x => x.el === e.target); if (v) v.on = e.isIntersecting; }), { rootMargin: '120px 0px' });
+  views.forEach(v => io.observe(v.el));
+  function frame(now){
+    if (document.hidden) return;
+    const t = reduce ? 3 : now / 1000;
+    for (const v of views) {
+      if (!v.on) continue;
+      const cw = v.el.clientWidth, ch = v.el.clientHeight; if (!cw || !ch) continue;
+      if (v.c.width !== Math.round(cw * dpr) || v.c.height !== Math.round(ch * dpr)) { v.c.width = Math.round(cw * dpr); v.c.height = Math.round(ch * dpr); v.drawn = false; }
+      if (reduce && v.drawn) continue;
+      if (cw > size[0] || ch > size[1]) { size = [Math.max(cw, size[0]), Math.max(ch, size[1])]; r.setSize(size[0], size[1], false); }
+      const shown = !v.el.closest('.rise') || v.el.closest('.rise').classList.contains('in');
+      if (v.born < 0) { if (!shown) continue; v.born = t; if (!reduce) pop(v, t + .15); }
+      const dt = Math.min(.05, t - (v.last || t)); v.last = t;
+      v.pxs += ((v.over ? v.px : 0) - v.pxs) * Math.min(1, dt * 4); v.pys += ((v.over ? v.py : 0) - v.pys) * Math.min(1, dt * 4);
+      if (v.place) v.place(cw, ch);
+      fit(v, cw, ch); popTick(v, t); v.tick(t, dt);
+      r.setViewport(0, 0, cw, ch); r.setScissor(0, 0, cw, ch); r.setScissorTest(true); r.clear(); r.render(v.scene, v.cam);
+      v.ctx.clearRect(0, 0, v.c.width, v.c.height);
+      v.ctx.drawImage(r.domElement, 0, r.domElement.height - v.c.height, v.c.width, v.c.height, 0, 0, v.c.width, v.c.height);
+      v.drawn = true;
+    }
+  }
+  r.setAnimationLoop(frame);
+}
+toys().catch(err => console.warn('toys', err));
 
 /* ---------- entrances ---------- */
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
