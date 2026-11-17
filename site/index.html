@@ -260,17 +260,15 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
 /* ---------- entrances ---------- */
 .js .rise{opacity:0;transform:translate3d(0,36px,0);transition:opacity .9s var(--out),transform 1.2s var(--out);transition-delay:calc(var(--i,0) * 80ms)}
 .js .rise.in{opacity:1;transform:none}
-/* html.motion is set by ?motion=full, to preview the moving page on a machine that asks for less motion */
-@media (prefers-reduced-motion:reduce){
-  html:not(.motion) *,html:not(.motion) *::before,html:not(.motion) *::after{animation:none !important;transition:none !important}
-  html:not(.motion).js .rise{opacity:1;transform:none}
-  html:not(.motion) .tilt{translate:none}
-}
+/* the page always moves; ?motion=reduce sets html.still for a calm, static version */
+html.still *,html.still *::before,html.still *::after{animation:none !important;transition:none !important}
+html.still.js .rise{opacity:1;transform:none}
+html.still .tilt{translate:none}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<script>document.documentElement.classList.add('js'); if (/[?&]motion=full\b/.test(location.search)) document.documentElement.classList.add('motion')</script>
+<script>document.documentElement.classList.add('js'); if (/[?&]motion=reduce\b/.test(location.search)) document.documentElement.classList.add('still')</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="arr" viewBox="0 0 20 12"><path d="M1 6h17M13 1l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></symbol></svg>
 
 <div class="bar" id="bar"><div class="wrap">
@@ -529,7 +527,7 @@ dialog.roomview.closing{animation:shut .5s var(--ease) both}
 
 <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
 <script>
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches && !document.documentElement.classList.contains('motion');
+const reduce = document.documentElement.classList.contains('still');
 const $ = id => document.getElementById(id);
 const stage = $('stage'), rv = $('roomview');
 
